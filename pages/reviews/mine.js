@@ -39,7 +39,7 @@ export function renderMine(container, context, lists) {
         'div',
         { className: 'review-mine-pick' },
         el('h2', { textContent: t('Qui es-tu ?') }),
-        el('p', { textContent: t('Choisis ton nom en haut à droite : cette page te montre les reviews qu’on t’a demandées, tes PR à merger, à corriger, oubliées, bloquées et tes brouillons.') }),
+        el('p', { textContent: t('Choisis ton nom dans « Affichage », les curseurs en haut à droite : cette page te montre les reviews qu’on t’a demandées, tes PR à merger, à corriger, oubliées, bloquées et tes brouillons.') }),
       ),
     )
 

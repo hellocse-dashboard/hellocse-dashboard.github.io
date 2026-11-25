@@ -1,6 +1,7 @@
 // What the board of the reviews shows, set by the viewer in a dialog behind the sliders of its head
-// (model/review-settings.js): their profile (which picks the tabs of the sides at once), the tabs, the lanes of the
-// kanban, the parts of the pages and of the cards; « Par défaut » goes back to the simple board of their profile.
+// (model/review-settings.js): who they are (« Pour toi », the notifications), their profile (which picks the tabs of the
+// sides at once), the tabs, the lanes of the kanban, the parts of the pages and of the cards; « Par défaut » goes back
+// to the simple board of their profile, still theirs.
 // Saving applies it at once; the browser keeps it.
 
 import { t } from '../../lib/i18n.js'
@@ -52,11 +53,17 @@ const choice = (type, name, value, label, checked) =>
   el('label', { className: 'reviews-settings-repo' }, el('input', { type, name, value, checked }), el('span', { className: 'repo-name', textContent: label }))
 
 /**
- * The choices of the dialog, from settings.
+ * The choices of the dialog, from settings: who the viewer is first, among the people of the team.
  * @param {ReviewSettings} settings
+ * @param {{ login: string, name: string }[]} people
+ * @param {string | null} me
  */
-function renderChoices(settings) {
+function renderChoices(settings, people, me) {
+  const picker = el('select', { className: 'reviews-input', name: 'display-me', ariaLabel: t('Qui es-tu ?') })
+  picker.append(new Option(t('Choisir mon nom'), ''), ...people.map(({ login, name }) => new Option(name, login)))
+  picker.value = me ?? ''
   $('[data-reviews-display-list]').replaceChildren(
+    group(t('Qui es-tu ?'), [picker]),
     group(t('Je suis'), PROFILES.map((profile) => choice('radio', 'profile', profile, PROFILE_LABELS[profile], settings.profile === profile))),
     group(t('Onglets'), TAB_KEYS.map((key) => choice('checkbox', 'tab', key, TAB_LABELS[key], settings.tabs[key]))),
     group(t('Colonnes du kanban'), KANBAN_LANES.map((lane) => choice('checkbox', 'lane', lane, LANE_LABELS[lane], settings.lanes[lane]))),
@@ -83,13 +90,18 @@ function readChoices() {
 }
 
 /**
- * Listens to the sliders, the dialog and its buttons.
- * @param {{ settings: () => ReviewSettings, onSave: (settings: ReviewSettings) => void }} display
+ * Listens to the sliders, the dialog and its buttons; saving gives the settings and who the viewer is.
+ * @param {{
+ *   settings: () => ReviewSettings, people: () => { login: string, name: string }[], me: () => string | null,
+ *   onSave: (settings: ReviewSettings, me: string | null) => void,
+ * }} display
  */
-export function setupDisplay({ settings, onSave }) {
+export function setupDisplay({ settings, people, me, onSave }) {
   const dialog = $('[data-reviews-display]', HTMLDialogElement)
+  /** @returns {string | null} */
+  const pickedMe = () => /** @type {HTMLSelectElement | null} */ (dialog.querySelector('select[name="display-me"]'))?.value || null
   $('[data-reviews-display-open]').addEventListener('click', () => {
-    renderChoices(settings())
+    renderChoices(settings(), people(), me())
     dialog.showModal()
   })
   // A profile picked: the tabs of its sides, at once; the rest stays as set.
@@ -102,10 +114,10 @@ export function setupDisplay({ settings, onSave }) {
       }
     }
   })
-  $('[data-reviews-display-reset]').addEventListener('click', () => renderChoices(defaultSettings(readChoices().profile)))
+  $('[data-reviews-display-reset]').addEventListener('click', () => renderChoices(defaultSettings(readChoices().profile), people(), pickedMe()))
   $('[data-reviews-display-form]').addEventListener('submit', (event) => {
     if (/** @type {SubmitEvent} */ (event).submitter?.getAttribute('value') === 'save') {
-      onSave(readChoices())
+      onSave(readChoices(), pickedMe())
     }
   })
   dialog.addEventListener('click', (event) => {

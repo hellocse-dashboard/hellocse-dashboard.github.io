@@ -155,7 +155,7 @@ export function render() {
   const forgotten = shown.filter((item) => item.lane === 'forgotten')
   const tma = shown.filter((item) => item.hotfix)
 
-  renderPicker(reviews, me)
+  renderSquadPicker(reviews)
   $('[data-reviews-settings-open]').classList.toggle('is-on', board.favorites.size > 0)
   renderTabs($('[data-reviews-tabs]'), {
     route,
@@ -259,16 +259,9 @@ async function keepFresh() {
   }
 }
 
-/**
- * @param {Reviews} reviews
- * @param {string | null} me
- */
-function renderPicker(reviews, me) {
-  const nameOf = (/** @type {string} */ login) => reviews.names[login] ?? login
-  const picker = $('[data-reviews-me]', HTMLSelectElement)
-  const placeholder = new Option(t('Qui es-tu ?'), '')
-  picker.replaceChildren(placeholder, ...[...reviews.team].sort((a, b) => nameOf(a).localeCompare(nameOf(b), 'fr', { sensitivity: 'base' })).map((login) => new Option(nameOf(login), login)))
-  picker.value = me ?? ''
+// The squad picker of the toolbar, with the squads of the data.
+/** @param {Reviews} reviews */
+function renderSquadPicker(reviews) {
   const squads = $('[data-reviews-squad]', HTMLSelectElement)
   squads.hidden = !reviews.squads.length
   squads.replaceChildren(new Option(t('Toutes les squads'), ''), ...reviews.squads.map((squad) => new Option(squad.name, squad.name)))
@@ -278,6 +271,19 @@ function renderPicker(reviews, me) {
 const storeFilters = () =>
   store(FILTERS_STORAGE_KEY, JSON.stringify({ squad: board.squad, mine: board.mine, repos: board.repos && [...board.repos], order: board.order }))
 
+// The people still in the team, by name: whom the board can be for.
+/** @returns {{ login: string, name: string }[]} */
+function teamByName() {
+  const reviews = board.reviews
+  if (!reviews) {
+    return []
+  }
+
+  return reviews.team
+    .map((login) => ({ login, name: reviews.names[login] ?? login }))
+    .sort((a, b) => a.name.localeCompare(b.name, 'fr', { sensitivity: 'base' }))
+}
+
 function show() {
   $('[data-reviews-lock]').hidden = true
   $('[data-reviews]').hidden = false
@@ -285,9 +291,8 @@ function show() {
   // On arrival, until this browser saw the current version of the welcome: the welcome.
   const reviews = board.reviews
   if (reviews && stored(WELCOMED_STORAGE_KEY) !== String(WELCOME_VERSION) && !$('[data-reviews-welcome]', HTMLDialogElement).open) {
-    const nameOf = (/** @type {string} */ login) => reviews.names[login] ?? login
     openWelcome({
-      team: reviews.team.map((login) => ({ login, name: nameOf(login) })).sort((a, b) => a.name.localeCompare(b.name, 'fr', { sensitivity: 'base' })),
+      team: teamByName(),
       me: board.me && reviews.team.includes(board.me) ? board.me : null,
       settings: board.settings,
     })
@@ -373,11 +378,6 @@ export function setupReviews() {
     show()
     keepFresh()
   })
-  $('[data-reviews-me]').addEventListener('change', (event) => {
-    board.me = /** @type {HTMLSelectElement} */ (event.target).value || null
-    store(ME_STORAGE_KEY, board.me)
-    render()
-  })
   $('[data-reviews-squad]').addEventListener('change', (event) => {
     board.squad = /** @type {HTMLSelectElement} */ (event.target).value || null
     storeFilters()
@@ -434,10 +434,14 @@ export function setupReviews() {
   })
   setupDisplay({
     settings: () => board.settings,
-    // The settings saved: the board shows them at once, on a tab that still shows.
-    onSave: (settings) => {
+    people: () => teamByName(),
+    me: () => board.me,
+    // The settings saved, and who the viewer is: the board shows them at once, on a tab that still shows.
+    onSave: (settings, me) => {
       board.settings = settings
       store(SETTINGS_STORAGE_KEY, JSON.stringify(settings))
+      board.me = me
+      store(ME_STORAGE_KEY, me)
       render()
     },
   })

@@ -107,17 +107,20 @@ setInterval(refresh, POLL_INTERVAL_MS)
 setInterval(() => state.syncRequest && refresh(), SYNC_POLL_INTERVAL_MS)
 setInterval(refreshClock, CLOCK_INTERVAL_MS)
 
+// The address of the dashboard with ?connexion always gets its lock screen, never the board of the reviews nor the year in
+// review a browser opened before: the way in for whoever has the password; once unlocked, the browser stays on it.
+const askedForLock = new URLSearchParams(location.search).has('connexion')
 const stored = await readStoredKey()
 if (stored) {
   state.key = stored.key
   state.keyExpiresAt = stored.expiresAt
   showDashboard()
   refresh()
-} else if (!hasUnlockedBefore() && hasVisitedReviews()) {
+} else if (!askedForLock && !hasUnlockedBefore() && hasVisitedReviews()) {
   // A browser that only ever opened the board of the reviews, never the dashboard, its password typed or not, locked
   // since or not: the dev team gets its board, never the lock screen of the dashboard.
   location.replace('reviews.html')
-} else if (!hasUnlockedBefore() && readRetroKey() !== null) {
+} else if (!askedForLock && !hasUnlockedBefore() && readRetroKey() !== null) {
   // A browser that only ever opened the year in review, never the dashboard: the team gets the year in review, never the
   // lock screen. Only a browser that unlocked the dashboard once asks for its password.
   location.replace('retro.html')
