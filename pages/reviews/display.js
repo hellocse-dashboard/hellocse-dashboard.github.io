@@ -5,7 +5,7 @@
 // Saving applies it at once; the browser keeps it.
 
 import { t } from '../../lib/i18n.js'
-import { defaultSettings, KANBAN_LANES, PROFILES, readSettings, TAB_KEYS } from '../../model/review-settings.js'
+import { defaultSettings, KANBAN_LANES, PROFILES, readSettings, SETTINGS_REVISION, TAB_KEYS } from '../../model/review-settings.js'
 import { $, el } from '../../ui/dom.js'
 
 /** @typedef {import('../../model/review-settings.js').ReviewSettings} ReviewSettings */
@@ -82,6 +82,8 @@ function readChoices() {
   const checked = (name) => Object.fromEntries(inputs(name).map((input) => [input.value, input.checked]))
 
   return readSettings({
+    // What the viewer checks now: the current revision, whose defaults it saw.
+    revision: SETTINGS_REVISION,
     profile: inputs('profile').find((input) => input.checked)?.value,
     tabs: checked('tab'),
     lanes: checked('lane'),

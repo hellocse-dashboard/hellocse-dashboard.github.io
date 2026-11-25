@@ -77,10 +77,16 @@ const board = {
   me: stored(ME_STORAGE_KEY) ?? stored(DASHBOARD_ME_STORAGE_KEY),
   /** @type {string | null} */
   squad: typeof savedFilters.squad === 'string' ? savedFilters.squad : null,
-  mine: savedFilters.mine === true,
+  // Which pull requests of the board: all of them, the person's and those asked of them (mine), or those of others they
+  // have not reviewed yet (unreviewed).
+  /** @type {'all' | 'mine' | 'unreviewed'} */
+  scope: ['mine', 'unreviewed'].includes(savedFilters.scope) ? savedFilters.scope : savedFilters.mine === true ? 'mine' : 'all',
   // The order of the cards: the oldest first (those waiting the longest), or the newest.
   /** @type {'oldest' | 'newest'} */
   order: savedFilters.order === 'newest' ? 'newest' : 'oldest',
+  // How a kanban of a single lane lays its cards out: a grid, or a column.
+  /** @type {'grid' | 'list'} */
+  layout: savedFilters.layout === 'list' ? 'list' : 'grid',
   // The repositories picked, null for all of them.
   /** @type {Set<string> | null} */
   repos: Array.isArray(savedFilters.repos) ? new Set(savedFilters.repos) : null,
@@ -142,9 +148,22 @@ export function render() {
   const now = Date.now()
   const me = board.me && reviews.team.includes(board.me) ? board.me : null
   const items = reviewItems(reviews, now)
-  const context = { reviews, me, items, settings: board.settings, order: board.order }
+  const context = {
+    reviews,
+    me,
+    items,
+    settings: board.settings,
+    order: board.order,
+    layout: board.layout,
+    // A layout picked for a kanban of a single lane: kept with the filters, the board drawn again.
+    onLayout: (/** @type {'grid' | 'list'} */ layout) => {
+      board.layout = layout
+      storeFilters()
+      render()
+    },
+  }
   // The filters of the lists: the repositories, the squad, the search, only what concerns the person.
-  const shown = filterItems(items, reviews, { repos: board.repos, squad: board.squad, query: board.query, mine: board.mine && me !== null, me })
+  const shown = filterItems(items, reviews, { repos: board.repos, squad: board.squad, query: board.query, mine: board.scope === 'mine' && me !== null, unreviewed: board.scope === 'unreviewed' && me !== null, me })
   const lists = me ? personalLists(items, me, now) : null
   const sides = boardColumns(items).map(({ side }) => side)
   const ofSide = (/** @type {Category} */ side, /** @type {ReviewItem[]} */ list) => list.filter((item) => item.side === side)
@@ -190,7 +209,7 @@ export function render() {
   renderSyncLine()
   $('[data-reviews-scope]').hidden = me === null
   for (const button of document.querySelectorAll('[data-reviews-scope] button')) {
-    button.setAttribute('aria-pressed', String((button.getAttribute('data-value') === 'mine') === board.mine))
+    button.setAttribute('aria-pressed', String(button.getAttribute('data-value') === board.scope))
   }
   for (const button of document.querySelectorAll('[data-reviews-order] button')) {
     button.setAttribute('aria-pressed', String(button.getAttribute('data-value') === board.order))
@@ -269,7 +288,10 @@ function renderSquadPicker(reviews) {
 }
 
 const storeFilters = () =>
-  store(FILTERS_STORAGE_KEY, JSON.stringify({ squad: board.squad, mine: board.mine, repos: board.repos && [...board.repos], order: board.order }))
+  store(
+    FILTERS_STORAGE_KEY,
+    JSON.stringify({ squad: board.squad, scope: board.scope, repos: board.repos && [...board.repos], order: board.order, layout: board.layout }),
+  )
 
 // The people still in the team, by name: whom the board can be for.
 /** @returns {{ login: string, name: string }[]} */
@@ -398,7 +420,8 @@ export function setupReviews() {
   $('[data-reviews-scope]').addEventListener('click', (event) => {
     const button = /** @type {HTMLElement} */ (event.target).closest('button')
     if (button) {
-      board.mine = button.getAttribute('data-value') === 'mine'
+      const value = button.getAttribute('data-value')
+      board.scope = value === 'mine' || value === 'unreviewed' ? value : 'all'
       storeFilters()
       render()
     }

@@ -298,3 +298,13 @@ select.reviews-input {
   fill: var(--gold);
   stroke: var(--gold-ring);
 }
+
+/* While a dialog is open (the preview of a pull request, the settings, the welcome), only the dialog scrolls: the board
+   behind it keeps still, its scrollbar gone and its room kept, so that nothing moves. */
+html {
+  scrollbar-gutter: stable;
+}
+
+html:has(dialog[open]) {
+  overflow: hidden;
+}

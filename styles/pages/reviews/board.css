@@ -186,3 +186,66 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* A kanban of a single lane: its cards side by side, in a grid, rather than stretched over the whole width. */
+.review-kanban.is-single.is-grid .review-lane {
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  align-items: stretch;
+}
+
+/* In the grid, the cards of a row take the same height: their head at the top, their line of figures at the bottom,
+   aligned from card to card. */
+.review-kanban.is-single.is-grid .review-card {
+  grid-template-rows: auto 1fr;
+  align-content: stretch;
+}
+
+.review-kanban.is-single.is-grid .review-card-meta {
+  align-self: end;
+}
+
+.review-kanban.is-single .review-lane > :not(.review-card) {
+  grid-column: 1 / -1;
+}
+
+/* The head of a lane: its title, and on a kanban of a single lane the picker of its layout, at the right. */
+.review-lane-top {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.review-layout {
+  display: inline-flex;
+  padding: 2px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.review-layout button {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 26px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.review-layout button[aria-pressed='true'] {
+  background: var(--series-1);
+  color: #ffffff;
+}
+
+.review-layout svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linejoin: round;
+}

@@ -8,7 +8,7 @@ import { formatNumber } from '../../lib/format.js'
 import { t } from '../../lib/i18n.js'
 import { visibleLanes } from '../../model/review-settings.js'
 import { boardSummary, LANES } from '../../model/reviews.js'
-import { el } from '../../ui/dom.js'
+import { el, svg } from '../../ui/dom.js'
 import { reviewCard } from './card.js'
 
 /** @typedef {import('./card.js').CardContext} CardContext */
@@ -194,6 +194,30 @@ function byAge(lane, order = 'oldest') {
   return order === 'newest' ? (a, b) => at(b) - at(a) : (a, b) => at(a) - at(b)
 }
 
+// The picker of the layout of a kanban of a single lane, at the top right of its lane: its cards in a grid, or in a
+// column.
+const LAYOUTS = [
+  { key: 'grid', label: t('Grille'), paths: ['M2.5 2.5h4.5v4.5h-4.5Z', 'M9 2.5h4.5v4.5h-4.5Z', 'M2.5 9h4.5v4.5h-4.5Z', 'M9 9h4.5v4.5h-4.5Z'] },
+  { key: 'list', label: t('Colonne'), paths: ['M2.5 3h11v3h-11Z', 'M2.5 10h11v3h-11Z'] },
+]
+/** @param {CardContext} context */
+function layoutToggle(context) {
+  const current = context.layout ?? 'grid'
+
+  return el(
+    'div',
+    { className: 'review-layout', role: 'group', ariaLabel: t('Disposition') },
+    ...LAYOUTS.map(({ key, label, paths }) => {
+      const icon = svg('svg', { viewBox: '0 0 16 16', 'aria-hidden': 'true' })
+      icon.append(...paths.map((d) => svg('path', { d })))
+      const button = el('button', { type: 'button', title: label, ariaLabel: label, ariaPressed: String(key === current) }, icon)
+      button.addEventListener('click', () => context.onLayout?.(/** @type {'grid' | 'list'} */ (key)))
+
+      return button
+    }),
+  )
+}
+
 // The band of a side that has forgotten pull requests: how many, and the way to them.
 /** @param {number} count */
 function forgottenBand(count) {
@@ -232,7 +256,10 @@ export function renderSide(container, context, side, items, redraw, settings) {
     ...(forgotten && settings.parts.forgotten ? [forgottenBand(forgotten)] : []),
     el(
       'div',
-      { className: `review-kanban is-${side}`, style: `--lanes: ${lanes.length}` },
+      {
+        className: `review-kanban is-${side}${lanes.length === 1 ? ` is-single is-${context.layout ?? 'grid'}` : ''}`,
+        style: `--lanes: ${lanes.length}`,
+      },
       ...lanes.map((lane) => {
         const cards = inLane(lane)
 
@@ -242,7 +269,7 @@ export function renderSide(container, context, side, items, redraw, settings) {
           el(
             'header',
             { className: 'review-lane-head' },
-            laneTitle(lane, cards.length),
+            el('div', { className: 'review-lane-top' }, laneTitle(lane, cards.length), ...(lanes.length === 1 ? [layoutToggle(context)] : [])),
             ...(settings.parts.hints ? [el('p', { className: 'review-lane-hint', textContent: LANE_LABELS[lane].hint })] : []),
           ),
           ...(cards.length ? cards.map((item) => reviewCard(context, item)) : [el('p', { className: 'review-empty', textContent: EMPTY[lane] })]),

@@ -14,7 +14,7 @@ import { openPreview, plainClick } from './preview.js'
  * What the cards need around them: the data, for names and the organization, the person the board is for, every
  * item of the board, for the previews of the counterparts, and what the viewer shows of a card (its size, who it waits
  * for, its other side: all of them without settings), and the order of the cards (the oldest first without one).
- * @typedef {{ reviews: Reviews, me: string | null, items?: ReviewItem[], settings?: import('../../model/review-settings.js').ReviewSettings, order?: 'oldest' | 'newest' }} CardContext
+ * @typedef {{ reviews: Reviews, me: string | null, items?: ReviewItem[], settings?: import('../../model/review-settings.js').ReviewSettings, order?: 'oldest' | 'newest', layout?: 'grid' | 'list', onLayout?: (layout: 'grid' | 'list') => void }} CardContext
  * @typedef {import('../../model/reviews.js').ReviewItem} ReviewItem
  */
 

@@ -1,18 +1,27 @@
 // What the board of the reviews shows, as each viewer sets it (kept in their browser): their profile, which picks the
 // tabs of the sides (a back-end developer sees the back, a full-stack one every side), the tabs, the lanes of the kanban
-// and the parts of its pages and cards. By default the board stays simple, to the essential at a glance: the lanes to
-// review, blocked by a code owner and with changes asked, their figures, and who each pull request waits for; the pull
-// requests ready to merge, the tab of the forgotten ones, the drafts, the hints of the lanes, the band of the forgotten
-// ones, the size of the pull requests and their other side show once asked for. No DOM.
+// and the parts of its pages and cards. By default the board stays simple, to the essential at a glance: the pull
+// requests to review, their figures, what they wait for; the pull
+// requests ready to merge, the tab of the forgotten ones, the drafts, the band of the forgotten ones and the other side
+// of a pull request show once asked for. No DOM.
 
 /** @typedef {'fullstack' | 'back' | 'front' | 'mobile'} Profile */
 /** @typedef {'pour-toi' | 'back' | 'front' | 'mobile' | 'autres' | 'tma' | 'oubliees'} TabKey */
 /** @typedef {'review' | 'owners' | 'changes' | 'ready'} KanbanLane */
 /** @typedef {'figures' | 'hints' | 'forgotten' | 'drafts' | 'labels' | 'files' | 'size' | 'waiters' | 'linked'} Part */
 /**
- * @typedef {{ profile: Profile, tabs: Record<TabKey, boolean>, lanes: Record<KanbanLane, boolean>, parts: Record<Part, boolean> }}
+ * @typedef {{ revision?: number, profile: Profile, tabs: Record<TabKey, boolean>, lanes: Record<KanbanLane, boolean>, parts: Record<Part, boolean> }}
  *   ReviewSettings
  */
+
+// The revision of the defaults: settings kept under an older one take the defaults that changed since (2: the size of a
+// pull request and what each lane means show by default, the kanban keeps to the pull requests to review), the viewer's
+// other choices kept.
+export const SETTINGS_REVISION = 2
+/** @type {Record<number, Part[]>} */
+const PARTS_CHANGED_IN = { 2: ['size', 'hints'] }
+/** @type {Record<number, KanbanLane[]>} */
+const LANES_CHANGED_IN = { 2: ['owners', 'changes'] }
 
 /** @type {Profile[]} */
 export const PROFILES = ['fullstack', 'back', 'front', 'mobile']
@@ -35,8 +44,9 @@ const PROFILE_SIDES = { fullstack: ['back', 'front', 'mobile', 'autres'], back: 
 const COMMON_TABS = ['pour-toi', 'tma']
 
 /**
- * What a profile sees by default: its sides, the person and the TMA; the kanban without the pull requests ready to
- * merge; its figures, and on a card its labels, the files it changes and who it waits for; nothing more.
+ * What a profile sees by default: its sides, the person and the TMA; the kanban of the pull requests to review only;
+ * its figures and what each lane means, and on a card its labels, the files it changes, its size and who it waits
+ * for; nothing more.
  * @param {Profile} [profile]
  * @returns {ReviewSettings}
  */
@@ -46,10 +56,11 @@ export function defaultSettings(profile = 'fullstack') {
   )
 
   return {
+    revision: SETTINGS_REVISION,
     profile,
     tabs,
-    lanes: { review: true, owners: true, changes: true, ready: false },
-    parts: { figures: true, hints: false, forgotten: false, drafts: false, labels: true, files: true, size: false, waiters: true, linked: false },
+    lanes: { review: true, owners: false, changes: false, ready: false },
+    parts: { figures: true, hints: true, forgotten: false, drafts: false, labels: true, files: true, size: true, waiters: true, linked: false },
   }
 }
 
@@ -77,7 +88,26 @@ export function readSettings(raw) {
     )
   }
 
-  return { profile, tabs: merged(defaults.tabs, kept.tabs), lanes: merged(defaults.lanes, kept.lanes), parts: merged(defaults.parts, kept.parts) }
+  const parts = merged(defaults.parts, kept.parts)
+  const lanes = merged(defaults.lanes, kept.lanes)
+  // What changed in the defaults since the revision kept takes its new default.
+  const revision = typeof kept.revision === 'number' ? kept.revision : 1
+  for (const [changedIn, changed] of Object.entries(PARTS_CHANGED_IN)) {
+    if (revision < Number(changedIn)) {
+      for (const part of changed) {
+        parts[part] = defaults.parts[part]
+      }
+    }
+  }
+  for (const [changedIn, changed] of Object.entries(LANES_CHANGED_IN)) {
+    if (revision < Number(changedIn)) {
+      for (const lane of changed) {
+        lanes[lane] = defaults.lanes[lane]
+      }
+    }
+  }
+
+  return { revision: SETTINGS_REVISION, profile, tabs: merged(defaults.tabs, kept.tabs), lanes, parts }
 }
 
 /**

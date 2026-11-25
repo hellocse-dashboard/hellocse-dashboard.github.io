@@ -71,6 +71,8 @@ export function reviewItems(reviews, now) {
         // How many files it changes, when the sync read it, and its labels on GitHub.
         files: record?.files ?? null,
         labels: record?.labels ?? [],
+        // Who reviewed or commented it (not its author): what « not reviewed by me yet » reads.
+        reviewers: [...new Set((record?.interventions ?? []).map(([login]) => login))],
         deleted: record?.deleted ?? 0,
         waited,
         heat: heatOf(waited),
@@ -85,8 +87,9 @@ export function reviewItems(reviews, now) {
 /**
  * The filters of the board: the repositories picked (null for all of them), the squad of the authors (its name, null for
  * everyone), a search in the titles, repositories, numbers, logins, names and labels, and, for a person, only what concerns them
- * (theirs, or their review asked).
- * @typedef {{ repos?: Set<string> | null, squad: string | null, query: string, mine: boolean, me: string | null }} ReviewFilters
+ * (mine: theirs, or their review asked), or only the pull requests of others they have not reviewed nor commented yet
+ * (unreviewed).
+ * @typedef {{ repos?: Set<string> | null, squad: string | null, query: string, mine: boolean, unreviewed?: boolean, me: string | null }} ReviewFilters
  */
 
 /**
@@ -94,7 +97,7 @@ export function reviewItems(reviews, now) {
  * @param {Reviews} reviews
  * @param {ReviewFilters} filters
  */
-export function filterItems(items, reviews, { repos = null, squad, query, mine, me }) {
+export function filterItems(items, reviews, { repos = null, squad, query, mine, unreviewed = false, me }) {
   const members = squad === null ? null : new Set(reviews.squads.find((other) => other.name === squad)?.members ?? [])
   const words = query.toLocaleLowerCase('fr').split(/\s+/).filter(Boolean)
   /** @type {(login: string) => string} */
@@ -108,6 +111,9 @@ export function filterItems(items, reviews, { repos = null, squad, query, mine, 
       return false
     }
     if (mine && me !== null && item.author !== me && !item.requestedReviewers.includes(me)) {
+      return false
+    }
+    if (unreviewed && me !== null && (item.author === me || item.reviewers.includes(me))) {
       return false
     }
     const text = [item.title ?? '', item.repo, `#${item.number}`, item.author, nameOf(item.author), ...item.labels.map(([label]) => label)].join(' ').toLocaleLowerCase('fr')
