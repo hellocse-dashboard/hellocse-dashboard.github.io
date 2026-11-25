@@ -1,0 +1,100 @@
+/* The preview of a pull request on the board of the reviews: the dashboard's dialog (styles/ui/pull-request-dialog.css),
+   with where it stands, who it waits for and its other side. */
+
+/* The preview of a pull request: the dashboard's dialog (styles/ui/pull-request-dialog.css), with where it stands. */
+.review-person {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  font-weight: 600;
+}
+
+.review-person.is-me .review-avatar {
+  box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--series-1);
+}
+
+.review-github {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  margin-left: auto;
+  padding: 4px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.review-github:hover {
+  background: var(--surface-hover);
+}
+
+.review-preview-standing {
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--lane);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--lane) 6%, var(--surface));
+}
+
+.review-preview-standing.is-review { --lane: var(--series-1); }
+.review-preview-standing.is-owners { --lane: var(--gold); }
+.review-preview-standing.is-changes { --lane: var(--status-serious); }
+.review-preview-standing.is-ready { --lane: var(--status-good); }
+.review-preview-standing.is-forgotten { --lane: var(--notification); }
+.review-preview-standing.is-drafts { --lane: var(--baseline); }
+
+.review-preview-lane {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  align-items: center;
+  margin: 0 0 10px;
+}
+
+.review-preview-people {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.review-preview-line {
+  display: grid;
+  grid-template-columns: minmax(150px, auto) 1fr;
+  gap: 4px 12px;
+  align-items: center;
+}
+
+.review-preview-line dt {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.review-preview-line dd {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin: 0;
+}
+
+.review-preview-linked {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.review-preview-linked-title {
+  display: block;
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+.review-tag.is-side-front { background: color-mix(in srgb, var(--series-1) 22%, var(--surface)); }
+.review-tag.is-side-back { background: color-mix(in srgb, var(--series-2) 22%, var(--surface)); }
+.review-tag.is-side-mobile { background: color-mix(in srgb, var(--series-3) 22%, var(--surface)); }
+
+.review-github svg {
+  fill: currentColor;
+}

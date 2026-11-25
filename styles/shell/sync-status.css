@@ -1,0 +1,48 @@
+/* Sync status */
+.sync {
+  /* The color of the state, for the dot and the halo it pulses with: grey while loading, green when live, orange when
+     stale or in error. */
+  --sync-color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.sync.is-live {
+  --sync-color: var(--status-good);
+}
+
+.sync.is-stale,
+.sync.is-error {
+  --sync-color: var(--status-serious);
+}
+
+/* A dot that stays round when the label beside it takes two lines. */
+.sync-dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--sync-color);
+}
+
+.sync.is-pulsing .sync-dot {
+  animation: pulse 1.2s ease-out 2;
+}
+
+/* A halo in the color of the state, when new stats come in and while a sync runs (sync-menu.css). */
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--sync-color) 50%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 10px transparent;
+  }
+}

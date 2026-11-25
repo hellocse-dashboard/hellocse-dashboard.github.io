@@ -1,0 +1,162 @@
+/* The toolbar of the board of the reviews (search, repositories, squad, « les miennes »), its tabs, and the rhythm of
+   its pages. */
+
+/* Toolbar */
+.reviews-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.reviews-search {
+  flex: 1 1 280px;
+  max-width: 460px;
+}
+
+.reviews-scope {
+  display: inline-flex;
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+}
+
+.reviews-scope button {
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.reviews-scope button[aria-pressed='true'] {
+  background: var(--text-primary);
+  color: var(--surface);
+  font-weight: 600;
+}
+
+.reviews-empty-board {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+/* The repository filter keeps its place in the toolbar, its summary the height of the fields. */
+.reviews-repos {
+  margin-left: 0;
+}
+
+.reviews-repos summary {
+  min-height: 38px;
+}
+
+/* A draft reads quieter: it waits for no one yet. */
+.review-card.is-drafts {
+  border-left-style: dashed;
+  background: color-mix(in srgb, var(--surface) 70%, var(--page));
+}
+
+/* Tabs: « Pour toi », one per side, the forgotten pull requests; each with its count. */
+.reviews-tabs {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--border);
+  scrollbar-width: none;
+}
+
+.reviews-tab {
+  display: inline-flex;
+  flex: none;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: -1px;
+  padding: 10px 14px;
+  border-bottom: 3px solid transparent;
+  color: var(--text-secondary);
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.reviews-tab:hover {
+  color: var(--text-primary);
+}
+
+.reviews-tab.is-current {
+  border-bottom-color: var(--text-primary);
+  color: var(--text-primary);
+}
+
+.reviews-tab-badge {
+  --type-color: var(--text-muted);
+  min-width: 22px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--type-color) 22%, var(--surface));
+  color: var(--text-primary);
+  font-size: 12px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.reviews-tab-badge.is-front { --type-color: var(--series-1); }
+.reviews-tab-badge.is-back { --type-color: var(--series-2); }
+.reviews-tab-badge.is-mobile { --type-color: var(--series-3); }
+
+.reviews-tab-badge.is-alert,
+.reviews-tab-badge.is-forgotten {
+  background: var(--notification);
+  color: #fff;
+}
+
+/* One rhythm between the blocks of a page: its figures, its filters, then the board, whose band, kanban and sections
+   keep the same gap. */
+.reviews-page,
+.reviews-mine > div,
+.reviews-board {
+  display: grid;
+  gap: 20px;
+}
+
+.reviews-board {
+  min-width: 0;
+}
+
+/* A section title sits closer to its own cards than to what comes before it. */
+.review-section + .review-section {
+  margin-top: 8px;
+}
+
+.review-count {
+  min-width: 22px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--surface-hover);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 640px) {
+  .reviews-search {
+    max-width: none;
+  }
+
+  .reviews-scope {
+    width: 100%;
+  }
+
+  .reviews-scope button {
+    flex: 1;
+  }
+}
+
+.reviews-tab-badge.is-tma {
+  --type-color: var(--ds-secondary, #e3077a);
+}

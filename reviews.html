@@ -1,0 +1,278 @@
+<!doctype html>
+<!-- The board of the reviews (« Relectures »), a page apart from the dashboard for the whole dev team: it opens with the
+     team's own password (REVIEWS_PASSWORD), shows every open pull request, back and front, after what each waits for,
+     and what waits on the person picked; it leads nowhere else. -->
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Relectures</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <!-- Nothing of the address goes to another site, the avatars of GitHub included. -->
+    <meta name="referrer" content="no-referrer" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='4' cy='4' r='2' fill='none' stroke='%232a78d6' stroke-width='1.6'/%3E%3Ccircle cx='4' cy='12' r='2' fill='none' stroke='%232a78d6' stroke-width='1.6'/%3E%3Ccircle cx='12' cy='12' r='2' fill='none' stroke='%231baf7a' stroke-width='1.6'/%3E%3Cpath d='M4 6v4M12 10V6a2 2 0 0 0-2-2H8' fill='none' stroke='%232a78d6' stroke-width='1.6'/%3E%3C/svg%3E"
+    />
+    <!-- The deploy workflow stamps the build placeholder with the commit, so a new deploy never mixes old and new files. -->
+    <meta name="build" content="911fd0fa16e6a15678d7b1e329a9551118b188d0" />
+    <!-- Where the page reads its data: empty, beside it; the deploy workflow sets it on the mirror only. -->
+    <meta name="data-base" content="https://cesarwatrin.github.io/github-pr-dashboard/" />
+    <!-- Applies the remembered theme before the first paint (the dashboard's); in English, the page waits for its
+         English (ui/translate.js), three seconds at most. -->
+    <script>
+      try {
+        const theme = localStorage.getItem('github-pr-dashboard:theme')
+        if (theme === 'light' || theme === 'dark') {
+          document.documentElement.dataset.theme = theme
+        }
+        if (localStorage.getItem('github-pr-dashboard:language') === 'en') {
+          document.documentElement.lang = 'en'
+          document.documentElement.dataset.language = 'en'
+          setTimeout(() => document.documentElement.classList.add('is-translated'), 3000)
+        }
+      } catch {}
+    </script>
+    <!-- The styles, in the order of the cascade, touch.css last. -->
+    <!-- The fonts of the design system of the team's products (styles/pages/reviews/theme.css); nothing of the address goes with them. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles/base.css?v=911fd0fa16e6a15678d7b1e329a9551118b188d0" />
+    <link rel="stylesheet" href="styles/pages/reviews/theme.css?v=911fd0fa16e6a15678d7b1e329a9551118b188d0" />
+    <link rel="stylesheet" href="styles/shell/lock.css?v=911fd0fa16e6a15678d7b1e329a9551118b188d0" />
+    <link rel="stylesheet" href="styles/ui/repo-filter.css?v=911fd0fa16e6a15678d7b1e329a9551118b188d0" />
+    <link rel="stylesheet" href="styles/ui/pull-request-dialog.css?v=911fd0fa16e6a15678d7b1e329a9551118b188d0" />
+    <link rel="stylesheet" href="styles/pages/reviews/head.css?v=911fd0fa16e6a15678d7b1e329a9551118b188d0" />
+    <link rel="stylesheet" href="styles/pages/reviews/nav.css?v=911fd0fa16e6a15678d7b1e329a9551118b188d0" />
+    <link rel="stylesheet" href="styles/pages/reviews/mine.css?v=911fd0fa16e6a15678d7b1e329a9551118b188d0" />
+    <link rel="stylesheet" href="styles/pages/reviews/board.css?v=911fd0fa16e6a15678d7b1e329a9551118b188d0" />
+    <link rel="stylesheet" href="styles/pages/reviews/cards.css?v=911fd0fa16e6a15678d7b1e329a9551118b188d0" />
+    <link rel="stylesheet" href="styles/pages/reviews/preview.css?v=911fd0fa16e6a15678d7b1e329a9551118b188d0" />
+    <link rel="stylesheet" href="styles/pages/reviews/settings.css?v=911fd0fa16e6a15678d7b1e329a9551118b188d0" />
+    <link rel="stylesheet" href="styles/pages/reviews/brand.css?v=911fd0fa16e6a15678d7b1e329a9551118b188d0" />
+    <link rel="stylesheet" href="styles/motion.css?v=911fd0fa16e6a15678d7b1e329a9551118b188d0" />
+    <link rel="stylesheet" href="styles/touch.css?v=911fd0fa16e6a15678d7b1e329a9551118b188d0" />
+    <!-- modules: written by scripts/module-map.mjs -->
+    <script type="importmap">
+    {
+      "imports": {
+        "./domain/auto-sync.js": "./domain/auto-sync.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0",
+        "./domain/math.js": "./domain/math.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0",
+        "./domain/open-pull-requests.js": "./domain/open-pull-requests.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0",
+        "./domain/time.js": "./domain/time.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0",
+        "./domain/timeline.js": "./domain/timeline.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0",
+        "./lib/english.js": "./lib/english.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0",
+        "./lib/english/blocks.js": "./lib/english/blocks.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0",
+        "./lib/english/frame.js": "./lib/english/frame.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0",
+        "./lib/english/method.js": "./lib/english/method.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0",
+        "./lib/english/pages.js": "./lib/english/pages.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0",
+        "./lib/english/review.js": "./lib/english/review.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0",
+        "./lib/format.js": "./lib/format.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0",
+        "./lib/i18n.js": "./lib/i18n.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0",
+        "./model/review-settings.js": "./model/review-settings.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0",
+        "./model/reviews.js": "./model/reviews.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0",
+        "./pages/reviews/board.js": "./pages/reviews/board.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0",
+        "./pages/reviews/card.js": "./pages/reviews/card.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0",
+        "./pages/reviews/display.js": "./pages/reviews/display.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0",
+        "./pages/reviews/labels.js": "./pages/reviews/labels.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0",
+        "./pages/reviews/mine.js": "./pages/reviews/mine.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0",
+        "./pages/reviews/preview.js": "./pages/reviews/preview.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0",
+        "./pages/reviews/repo-filter.js": "./pages/reviews/repo-filter.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0",
+        "./pages/reviews/reviews.js": "./pages/reviews/reviews.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0",
+        "./pages/reviews/settings.js": "./pages/reviews/settings.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0",
+        "./pages/reviews/sync.js": "./pages/reviews/sync.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0",
+        "./pages/reviews/welcome.js": "./pages/reviews/welcome.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0",
+        "./services/build.js": "./services/build.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0",
+        "./services/github.js": "./services/github.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0",
+        "./services/reviews-source.js": "./services/reviews-source.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0",
+        "./services/stats-key.js": "./services/stats-key.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0",
+        "./services/stats-source.js": "./services/stats-source.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0",
+        "./ui/dom.js": "./ui/dom.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0",
+        "./ui/github.js": "./ui/github.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0",
+        "./ui/icons.js": "./ui/icons.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0",
+        "./ui/translate.js": "./ui/translate.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0"
+      }
+    }
+    </script>
+    <link rel="modulepreload" href="reviews.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0" />
+    <link rel="modulepreload" href="domain/auto-sync.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0" />
+    <link rel="modulepreload" href="domain/math.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0" />
+    <link rel="modulepreload" href="domain/open-pull-requests.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0" />
+    <link rel="modulepreload" href="domain/time.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0" />
+    <link rel="modulepreload" href="domain/timeline.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0" />
+    <link rel="modulepreload" href="lib/format.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0" />
+    <link rel="modulepreload" href="lib/i18n.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0" />
+    <link rel="modulepreload" href="model/review-settings.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0" />
+    <link rel="modulepreload" href="model/reviews.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0" />
+    <link rel="modulepreload" href="pages/reviews/board.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0" />
+    <link rel="modulepreload" href="pages/reviews/card.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0" />
+    <link rel="modulepreload" href="pages/reviews/display.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0" />
+    <link rel="modulepreload" href="pages/reviews/labels.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0" />
+    <link rel="modulepreload" href="pages/reviews/mine.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0" />
+    <link rel="modulepreload" href="pages/reviews/preview.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0" />
+    <link rel="modulepreload" href="pages/reviews/repo-filter.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0" />
+    <link rel="modulepreload" href="pages/reviews/reviews.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0" />
+    <link rel="modulepreload" href="pages/reviews/settings.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0" />
+    <link rel="modulepreload" href="pages/reviews/sync.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0" />
+    <link rel="modulepreload" href="pages/reviews/welcome.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0" />
+    <link rel="modulepreload" href="services/build.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0" />
+    <link rel="modulepreload" href="services/github.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0" />
+    <link rel="modulepreload" href="services/reviews-source.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0" />
+    <link rel="modulepreload" href="services/stats-key.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0" />
+    <link rel="modulepreload" href="services/stats-source.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0" />
+    <link rel="modulepreload" href="ui/dom.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0" />
+    <link rel="modulepreload" href="ui/github.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0" />
+    <link rel="modulepreload" href="ui/icons.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0" />
+    <link rel="modulepreload" href="ui/translate.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0" />
+    <!-- /modules -->
+    <script type="module" src="reviews.js?v=911fd0fa16e6a15678d7b1e329a9551118b188d0"></script>
+  </head>
+  <body>
+    <!-- The board is published encrypted: the page asks for the password of the dev team before it can read it. -->
+    <div class="lock" data-reviews-lock hidden>
+      <form class="lock-card" data-reviews-lock-form>
+        <div>
+          <h1>Relectures</h1>
+          <p class="subtitle">Les PR à relire de toute l’équipe. L’accès reste ouvert 30 jours sur cet appareil.</p>
+        </div>
+        <!-- Password managers file a password under a username: the board has none, so this field names it. -->
+        <input type="text" name="username" autocomplete="username" value="Relectures" hidden />
+        <label class="lock-field">
+          Mot de passe de l’équipe
+          <input class="reviews-input" type="password" name="password" autocomplete="current-password" required data-reviews-password />
+        </label>
+        <p class="lock-error" role="alert" data-reviews-lock-error hidden></p>
+        <button type="submit" class="lock-submit">Déverrouiller</button>
+        <!-- The language of the page (pages/reviews/reviews.js): it loads again in the other one. -->
+        <button type="button" class="reviews-language-link" data-reviews-language></button>
+      </form>
+    </div>
+
+    <div class="reviews" data-reviews hidden>
+      <header class="reviews-head">
+        <div class="reviews-brand">
+          <h1>Relectures</h1>
+          <p class="reviews-sync" data-reviews-sync></p>
+        </div>
+        <div class="reviews-actions">
+          <select class="reviews-input reviews-me" name="me" aria-label="Qui es-tu ?" data-reviews-me></select>
+          <button type="button" class="reviews-icon-button reviews-notify" aria-pressed="false" aria-label="Notifications" data-reviews-notify hidden>
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 11V7a4 4 0 0 1 8 0v4l1.5 1.5h-11Z" /><path d="M6.5 14a1.5 1.5 0 0 0 3 0" /></svg>
+          </button>
+          <button type="button" class="reviews-icon-button reviews-language" data-reviews-language></button>
+          <button type="button" class="reviews-icon-button" aria-label="Affichage" title="Affichage : mon profil, les onglets, les colonnes, ce que montre chaque PR" data-reviews-display-open>
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h7M12 4h2M2 8h2M7 8h7M2 12h8M13 12h1" /><circle cx="10.5" cy="4" r="1.5" /><circle cx="5.5" cy="8" r="1.5" /><circle cx="11.5" cy="12" r="1.5" /></svg>
+          </button>
+          <button type="button" class="reviews-icon-button reviews-favorites" aria-label="Mes dépôts favoris" title="Mes dépôts favoris" data-reviews-settings-open>
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.8l1.9 3.9 4.3.6-3.1 3 .7 4.3L8 11.6l-3.8 2 .7-4.3-3.1-3 4.3-.6Z" /></svg>
+          </button>
+          <button type="button" class="reviews-icon-button" aria-label="Changer de thème" title="Changer de thème" data-reviews-theme>
+            <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.5" /><path d="M8 2.5v11a5.5 5.5 0 0 0 0-11Z" class="is-filled" /></svg>
+          </button>
+          <button type="button" class="reviews-icon-button" aria-label="Verrouiller" title="Verrouiller" data-reviews-lock-now>
+            <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.5" /><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" /></svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- The pages of the board (pages/reviews/board.js): « Pour toi », one per side, the forgotten pull requests. -->
+      <nav class="reviews-tabs" aria-label="Pages" data-reviews-tabs></nav>
+
+      <!-- « Pour toi »: what waits on the person picked, as « Mes PR » on the dashboard. -->
+      <section class="reviews-mine" data-reviews-me-page hidden>
+        <div data-reviews-mine></div>
+      </section>
+
+      <!-- A side (back, front…) or the forgotten pull requests: the filters, then the kanban or the list. -->
+      <div class="reviews-page" data-reviews-list-page hidden>
+        <section class="reviews-summary" aria-label="En chiffres" data-reviews-summary></section>
+        <div class="reviews-toolbar">
+          <input class="reviews-input reviews-search" type="search" name="search" placeholder="Chercher une PR, un dépôt, une personne…" aria-label="Chercher" data-reviews-search />
+          <details class="repo-filter reviews-repos" data-reviews-repos></details>
+          <select class="reviews-input" name="squad" aria-label="Squad" data-reviews-squad hidden></select>
+          <div class="reviews-scope reviews-order" role="group" aria-label="Ordre" data-reviews-order>
+            <button type="button" data-value="oldest" aria-pressed="true">Plus anciennes d’abord</button>
+            <button type="button" data-value="newest" aria-pressed="false">Plus récentes d’abord</button>
+          </div>
+          <div class="reviews-scope" role="group" aria-label="Quelles PR" data-reviews-scope hidden>
+            <button type="button" data-value="all" aria-pressed="true">Toutes</button>
+            <button type="button" data-value="mine" aria-pressed="false">Les miennes et celles qu’on m’a demandées</button>
+          </div>
+        </div>
+        <p class="reviews-empty-board" data-reviews-empty hidden>Aucune PR ouverte ne correspond.</p>
+        <div class="reviews-board" data-reviews-board></div>
+      </div>
+    </div>
+
+    <!-- The welcome, on arrival while nothing is set (pages/reviews/welcome.js). -->
+    <dialog class="reviews-settings reviews-welcome" aria-labelledby="reviews-welcome-title" data-reviews-welcome>
+      <form method="dialog" class="reviews-settings-card" data-reviews-welcome-form>
+        <header class="reviews-settings-head">
+          <h2 id="reviews-welcome-title">Bienvenue sur les Relectures 👋</h2>
+          <p>Trois questions pour un tableau à ta main. Il reste simple, et tu pourras tout changer ensuite avec les curseurs et l’étoile en haut à droite.</p>
+        </header>
+        <div class="reviews-settings-list">
+          <fieldset class="reviews-settings-group">
+            <legend>Qui es-tu ?</legend>
+            <select class="reviews-input" name="welcome-me" aria-label="Qui es-tu ?" data-reviews-welcome-me></select>
+          </fieldset>
+          <fieldset class="reviews-settings-group">
+            <legend>Tu relis plutôt</legend>
+            <div class="reviews-welcome-profiles" data-reviews-welcome-profiles></div>
+          </fieldset>
+          <fieldset class="reviews-settings-group">
+            <legend>Tu veux voir aussi</legend>
+            <div data-reviews-welcome-extras></div>
+          </fieldset>
+          <label class="reviews-settings-repo">
+            <input type="checkbox" name="welcome-favorites" data-reviews-welcome-favorites />
+            <span class="repo-name">Choisir ensuite mes dépôts favoris</span>
+          </label>
+        </div>
+        <footer class="reviews-settings-actions">
+          <button type="submit" value="later" class="button-secondary" data-reviews-welcome-later>Plus tard</button>
+          <button type="submit" value="save" class="lock-submit">C’est parti</button>
+        </footer>
+      </form>
+    </dialog>
+
+    <!-- What the viewer shows of the board (pages/reviews/display.js). -->
+    <dialog class="reviews-settings" aria-labelledby="reviews-display-title" data-reviews-display>
+      <form method="dialog" class="reviews-settings-card" data-reviews-display-form>
+        <header class="reviews-settings-head">
+          <h2 id="reviews-display-title">Affichage</h2>
+          <p>Simple par défaut : affiche plus au besoin. Ton profil choisit tes onglets. Gardé dans ce navigateur.</p>
+        </header>
+        <div class="reviews-settings-list" data-reviews-display-list></div>
+        <footer class="reviews-settings-actions">
+          <button type="button" class="button-secondary" data-reviews-display-reset>Par défaut</button>
+          <button type="submit" value="cancel" class="button-secondary">Annuler</button>
+          <button type="submit" value="save" class="lock-submit">Enregistrer</button>
+        </footer>
+      </form>
+    </dialog>
+
+    <!-- The settings: the viewer's favorite repositories (pages/reviews/settings.js). -->
+    <dialog class="reviews-settings" aria-labelledby="reviews-settings-title" data-reviews-settings>
+      <form method="dialog" class="reviews-settings-card" data-reviews-settings-form>
+        <header class="reviews-settings-head">
+          <h2 id="reviews-settings-title">Mes dépôts favoris</h2>
+          <p>Le filtre des dépôts se limite à eux dès l’enregistrement, et le raccourci « ★ Mes favoris » les retrouve. Gardés dans ce navigateur.</p>
+          <input class="reviews-input" type="search" name="settings-search" placeholder="Chercher un dépôt…" aria-label="Chercher un dépôt" data-reviews-settings-search />
+        </header>
+        <div class="reviews-settings-list" data-reviews-settings-list></div>
+        <footer class="reviews-settings-actions">
+          <button type="button" class="button-secondary" data-reviews-settings-clear>Tout décocher</button>
+          <button type="submit" value="cancel" class="button-secondary">Annuler</button>
+          <button type="submit" value="save" class="lock-submit" data-reviews-settings-save>Enregistrer</button>
+        </footer>
+      </form>
+    </dialog>
+
+    <!-- The preview of a pull request, on a plain click on it (pages/reviews/preview.js). -->
+    <dialog class="pr-dialog" aria-labelledby="reviews-preview-title" data-reviews-preview>
+      <article class="pr-dialog-card" data-reviews-preview-card></article>
+    </dialog>
+  </body>
+</html>

@@ -1,0 +1,207 @@
+/* Projects page: what they add up to and their timeline, then a card per project, like those of the repositories and
+   the squads, then the table that compares them. */
+.projects-content {
+  display: grid;
+  gap: 16px;
+}
+
+.project-card-head .project-status,
+.person-dialog-title .project-status {
+  flex: none;
+  margin-left: auto;
+}
+
+.project-dates {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+/* Its repositories, each opening its own dialog, over the button that stretches across the card. */
+.project-repos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 12px;
+  margin: 0;
+  font-size: 13px;
+}
+
+.project-card .repo-link {
+  position: relative;
+  z-index: 1;
+}
+
+/* A status of the status filter: the dot of its color, then its word. */
+.status-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* A repository of a project, then the GitHub mark of the pull request that merges the branch of the project there, in
+   the color of its state: green once merged, red when closed without a merge, grey otherwise. */
+.project-repo {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.project-merge-link {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  color: var(--text-secondary);
+}
+
+.project-merge-link:hover {
+  color: var(--text-primary);
+}
+
+.project-merge-link svg {
+  fill: currentColor;
+}
+
+.project-merge-link.is-merged,
+.project-branches .is-merged {
+  color: var(--diff-added);
+}
+
+.project-merge-link.is-closed,
+.project-branches .is-closed {
+  color: var(--diff-deleted);
+}
+
+.project-branches .is-merged {
+  border-color: color-mix(in srgb, var(--diff-added) 45%, var(--border));
+}
+
+.project-branches .is-closed {
+  border-color: color-mix(in srgb, var(--diff-deleted) 45%, var(--border));
+}
+
+/* The pull request that merges the branch of the project in each of its repositories, in its dialog: a GitHub pill per
+   repository, in the color of its state. */
+.project-branches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+}
+
+/* The stages of a project in its dialog, the earliest first: its name and status, its dates and code pull requests, and
+   the pill of the pull request that merges it in each repository, in as many columns as fit. */
+.project-stage-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px 24px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.project-stage {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  min-width: 0;
+}
+
+.project-stage-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.project-stage-dates {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.project-stage-merges .person-dialog-github {
+  padding: 2px 8px;
+  font-size: 12px;
+}
+
+/* The people beyond those an avatar stack shows: « +3 », as round as an avatar. */
+.avatar-more {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--avatar-size, 28px);
+  height: var(--avatar-size, 28px);
+  margin-left: -6px;
+  border: 2px solid var(--surface);
+  border-radius: 50%;
+  background: var(--surface-hover);
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Lines added over lines deleted, in the colors of a diff, one above the other as in the tables. */
+.project-lines-added,
+.project-lines-deleted {
+  display: block;
+  color: var(--diff-added);
+  font-size: 14px;
+  line-height: 1.25;
+}
+
+.project-lines-deleted {
+  color: var(--diff-deleted);
+}
+
+/* The name of a project in the table opens its dialog; its repositories go under it, cut with an ellipsis. */
+.project-name-cell .project-pick {
+  display: block;
+}
+
+.project-name-repos {
+  display: block;
+  max-width: 96px;
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: 11px;
+  text-overflow: ellipsis;
+}
+
+/* Fourteen columns: tighter than the other tables, their heads wrapping, so that it fits from a 1080 px wide window. */
+[data-projects] thead th button {
+  min-width: 0;
+  padding: 8px 4px;
+}
+
+[data-projects] td {
+  padding: 8px 5px;
+}
+
+[data-projects] .project-status {
+  padding: 0 6px;
+  font-size: 11px;
+}
+
+.project-date {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+/* The people of a project, and under it the share of the team they are. */
+.project-people span {
+  display: block;
+  line-height: 1.25;
+}
+
+.project-share {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+/* On the timeline, the status follows the name of the project, in the column of the names. */
+.gantt-head .project-status {
+  flex: none;
+  padding: 0 7px;
+  font-size: 11px;
+}
+

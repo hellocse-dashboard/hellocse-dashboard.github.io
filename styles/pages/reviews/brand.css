@@ -1,0 +1,96 @@
+/* The brand on the board of the reviews, loaded after its other styles so that it wins: the titles in Oswald, the
+   buttons in the main blue, the clickable cards and the scrollbars of the design system (tokens in theme.css). */
+
+/* The titles, figures and tabs in Oswald, as the brand's. */
+.reviews-brand h1,
+.lock-card h1,
+.review-figure-value,
+.reviews-tab,
+.review-mine-head h2,
+.review-section-title,
+.review-lane-title,
+.pr-dialog-title {
+  color: var(--title);
+  font-family: var(--font-title);
+  letter-spacing: 0.01em;
+}
+
+.reviews-brand h1 {
+  font-size: 30px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.review-figure-value {
+  font-weight: 500;
+}
+
+.reviews-tab {
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.reviews-tab.is-current {
+  border-bottom-color: var(--ds-main);
+}
+
+/* The buttons of the brand: the main blue. */
+.lock-submit,
+.reviews-scope button[aria-pressed='true'],
+.repo-presets button[aria-pressed='true'] {
+  border-color: var(--ds-main);
+  background: var(--ds-main);
+  color: #ffffff;
+}
+
+.repo-filter-list input {
+  accent-color: var(--ds-main);
+}
+
+a:focus-visible,
+button:focus-visible,
+select:focus-visible,
+input:focus-visible,
+summary:focus-visible {
+  outline: 2px solid var(--ds-main);
+  outline-offset: 2px;
+}
+
+/* The clickable cards of the design system: a light blue ring and a blue shadow on hover, a blue ring on focus, a
+   slight growth unless motion is reduced. */
+.review-card,
+.review-figure {
+  outline: 2px solid transparent;
+  transition:
+    transform 0.2s ease-out,
+    box-shadow 0.2s ease-out,
+    outline-color 0.2s ease-out;
+}
+
+.review-card:hover,
+.review-figure:hover {
+  outline-color: var(--ds-main-slight);
+  box-shadow: var(--shadow);
+}
+
+.review-card:has(.review-card-title:focus-visible) {
+  outline-color: var(--ds-main);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .review-card:hover,
+  .review-figure:hover {
+    transform: scale(1.02);
+  }
+}
+
+/* The scrollbars of the design system. */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background: var(--ds-disabled-light);
+}

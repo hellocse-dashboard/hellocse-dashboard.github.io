@@ -1,0 +1,106 @@
+/* The board of the reviews (reviews.html) in the design system of the team's products: Roboto for the text, Oswald for the titles
+   and figures, its palette (main blue, accent orange, positive green, negative red, quaternary yellow, tertiary purple,
+   dark blue content) on the tokens of styles/base.css, light and dark, and its clickable cards. Loaded right after
+   base.css, by this page only: every style of the board reads these tokens. */
+
+:root {
+  /* The palette of the design system, as plain values. */
+  --ds-main: #168ebd;
+  --ds-main-xslight: #35b5b4;
+  --ds-main-slight: #c7e4ef;
+  --ds-main-light: #e8f4f8;
+  --ds-main-xlight: #f3f9fc;
+  --ds-secondary: #e3077a;
+  --ds-tertiary: #945bea;
+  --ds-quaternary: #fdcd00;
+  --ds-quaternary-dark: #f5c800;
+  /* A darker yellow for a text or a ring on the yellow, which the palette lacks. */
+  --ds-quaternary-ink: #8a6d00;
+  --ds-content: #004660;
+  --ds-content-xdark: #0e131b;
+  --ds-content-dark: #2d384e;
+  --ds-content-ldark: #151c29;
+  --ds-content-light: #d9e3e7;
+  --ds-accent: #f18724;
+  --ds-accent-slight: #fff5e8;
+  --ds-disabled: #808080;
+  --ds-disabled-slight: #afbfc6;
+  --ds-disabled-light: #cccccc;
+  --ds-disabled-xlight: #e5e5e5;
+  --ds-disabled-glight: #f6f6f6;
+  --ds-disabled-2xlight: #e1e8eb;
+  --ds-positive: #50ac5e;
+  /* A darker green for the lines added, readable on white, which the palette lacks. */
+  --ds-positive-ink: #2f7d3b;
+  --ds-positive-slight: #edf7ef;
+  --ds-negative: #ce2b36;
+  --ds-negative-slight: #ff7a5c;
+  --ds-negative-light: #f8f2f4;
+
+  /* A white page, as the products of the team: the blue of the brand is kept for what acts. */
+  --page: #ffffff;
+  --surface: #ffffff;
+  --surface-hover: var(--ds-main-light);
+  --text-primary: #1a1a1a;
+  --text-secondary: var(--ds-content-dark);
+  --text-muted: var(--ds-disabled);
+  --gridline: var(--ds-disabled-xlight);
+  --baseline: var(--ds-disabled-slight);
+  --border: var(--ds-disabled-2xlight);
+  --series-1: var(--ds-main);
+  --series-2: var(--ds-accent);
+  --series-3: var(--ds-tertiary);
+  --highlight: var(--ds-main-light);
+  --success-text: var(--ds-positive-ink);
+  --status-good: var(--ds-positive);
+  --status-serious: var(--ds-accent);
+  --notification: var(--ds-negative);
+  --diff-added: var(--ds-positive-ink);
+  --diff-deleted: var(--ds-negative);
+  --gold: var(--ds-quaternary);
+  --gold-ring: var(--ds-quaternary-ink);
+  --shadow: 0 4px 16px rgb(22 142 189 / 25%);
+  --radius: 12px;
+  --font: Roboto, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-title: Oswald, Roboto, system-ui, sans-serif;
+  /* The titles in the dark blue of the brand. */
+  --title: var(--ds-content);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --page: var(--ds-content-xdark);
+    --surface: var(--ds-content-ldark);
+    --surface-hover: var(--ds-content-dark);
+    --text-primary: #ffffff;
+    --text-secondary: var(--ds-content-light);
+    --text-muted: var(--ds-disabled-slight);
+    --gridline: #24304a;
+    --baseline: #3a4763;
+    --border: rgb(255 255 255 / 10%);
+    --highlight: rgb(22 142 189 / 22%);
+    --diff-added: var(--ds-positive);
+    --diff-deleted: var(--ds-negative-slight);
+    --success-text: var(--ds-positive);
+    --shadow: 0 16px 32px rgb(0 0 0 / 25%);
+    --title: #ffffff;
+  }
+}
+
+:root[data-theme='dark'] {
+  --page: var(--ds-content-xdark);
+  --surface: var(--ds-content-ldark);
+  --surface-hover: var(--ds-content-dark);
+  --text-primary: #ffffff;
+  --text-secondary: var(--ds-content-light);
+  --text-muted: var(--ds-disabled-slight);
+  --gridline: #24304a;
+  --baseline: #3a4763;
+  --border: rgb(255 255 255 / 10%);
+  --highlight: rgb(22 142 189 / 22%);
+  --diff-added: var(--ds-positive);
+  --diff-deleted: var(--ds-negative-slight);
+  --success-text: var(--ds-positive);
+  --shadow: 0 16px 32px rgb(0 0 0 / 25%);
+  --title: #ffffff;
+}

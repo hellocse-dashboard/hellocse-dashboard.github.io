@@ -1,0 +1,128 @@
+/* Stat tiles */
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 16px 24px;
+  margin-top: 14px;
+}
+
+.tile-group {
+  margin-top: 18px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.tile-group + .tiles {
+  margin-top: 8px;
+}
+
+/* The label on top, the value at the bottom: values line up across a row whatever the lines of their labels. */
+.tile {
+  display: grid;
+  grid-template-rows: 1fr auto;
+  gap: 2px;
+}
+
+.tile-label {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.tile-value-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.tile-value {
+  font-variant-numeric: tabular-nums;
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+.tile-bump {
+  color: var(--success-text);
+  font-size: 13px;
+  font-weight: 600;
+  opacity: 0;
+  transform: translateY(4px);
+  transition:
+    opacity 300ms ease,
+    transform 400ms var(--ease-out);
+}
+
+.tile-bump.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* The change against the range compared to, under the value: a pill like those of the monthly report. */
+/* The podium of a counter of the day, under it: a line per place, quiet, the medal first and the count after the
+   name. */
+.tile-podium {
+  display: grid;
+  align-content: start;
+  gap: 4px;
+  margin: 8px 0 0;
+  padding: 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  list-style: none;
+}
+
+.tile-podium li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+/* A tile with a podium keeps its value under its label, whatever the height of the podiums beside it. */
+.tile:has(.tile-podium) {
+  grid-template-rows: auto auto 1fr;
+  align-content: start;
+}
+
+.tile-podium-medal {
+  flex: none;
+  width: 18px;
+  font-size: 14px;
+}
+
+/* A long name gives way, cut short, to the count after it. */
+.tile-podium .person-link {
+  overflow: hidden;
+}
+
+.tile-podium .person-link-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tile-podium-count {
+  flex: none;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Those tied with the last place shown, counted on a line of their own, under the medals. */
+.tile-podium .tile-podium-more {
+  padding-left: 24px;
+  color: var(--text-muted);
+}
+
+.tile-change {
+  justify-self: start;
+  margin-top: 2px;
+}
+
+.tile-change.is-missing {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
