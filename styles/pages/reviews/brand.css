@@ -652,8 +652,8 @@ summary:focus-visible {
 }
 
 /* The pill of a segmented control (the tabs, the order, the scope): one element that glides under the segment picked
-   (pages/reviews/indicator.js), with a little spring; the segments themselves stay clear above it. */
-.reviews-tabs,
+   (pages/reviews/indicator.js), with a little spring; the segments themselves stay clear above it. The tabs, sticky,
+   hold it already: relative, they would leave the top of the page and stand 12px lower. */
 .reviews-scope {
   position: relative;
 }

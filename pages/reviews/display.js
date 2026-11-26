@@ -7,6 +7,7 @@
 import { t } from '../../lib/i18n.js'
 import { defaultSettings, KANBAN_LANES, PROFILES, readSettings, SETTINGS_REVISION, TAB_KEYS } from '../../model/review-settings.js'
 import { $, el } from '../../ui/dom.js'
+import { moveIndicator } from './indicator.js'
 
 /** @typedef {import('../../model/review-settings.js').ReviewSettings} ReviewSettings */
 
@@ -54,6 +55,25 @@ const choice = (type, name, value, label, checked) =>
   el('label', { className: 'reviews-settings-repo' }, el('input', { type, name, value, checked }), el('span', { className: 'repo-name', textContent: label }))
 
 /**
+ * The profile, a segmented control as in iOS: a radio per profile, hidden, its label a segment.
+ * @param {ReviewSettings['profile']} picked
+ */
+const profiles = (picked) =>
+  el(
+    'div',
+    { className: 'reviews-segmented' },
+    ...PROFILES.map((profile) =>
+      el('label', { className: 'reviews-segment' }, el('input', { type: 'radio', name: 'profile', value: profile, checked: picked === profile }), el('span', { textContent: PROFILE_LABELS[profile] })),
+    ),
+  )
+
+// The pill of the profile glides under the one picked; placed at once when the dialog opens.
+function placeProfile() {
+  const control = $('[data-reviews-display] .reviews-segmented')
+  moveIndicator(control, control.querySelector('.reviews-segment:has(input:checked)'))
+}
+
+/**
  * The choices of the dialog, from settings: who the viewer is first, among the people of the team.
  * @param {ReviewSettings} settings
  * @param {{ login: string, name: string }[]} people
@@ -65,7 +85,7 @@ function renderChoices(settings, people, me) {
   picker.value = me ?? ''
   $('[data-reviews-display-list]').replaceChildren(
     group(t('Qui es-tu ?'), [picker]),
-    group(t('Je suis'), PROFILES.map((profile) => choice('radio', 'profile', profile, PROFILE_LABELS[profile], settings.profile === profile))),
+    group(t('Je suis'), [profiles(settings.profile)]),
     group(t('Onglets'), TAB_KEYS.map((key) => choice('checkbox', 'tab', key, TAB_LABELS[key], settings.tabs[key]))),
     group(t('Colonnes du kanban'), KANBAN_LANES.map((lane) => choice('checkbox', 'lane', lane, LANE_LABELS[lane], settings.lanes[lane]))),
     group(t('Sur les pages'), Object.entries(PAGE_PARTS).map(([part, label]) => choice('checkbox', 'part', part, label, settings.parts[/** @type {keyof ReviewSettings['parts']} */ (part)]))),
@@ -106,6 +126,7 @@ export function setupDisplay({ settings, people, me, onSave }) {
   $('[data-reviews-display-open]').addEventListener('click', () => {
     renderChoices(settings(), people(), me())
     dialog.showModal()
+    placeProfile()
   })
   // Any change applies at once, as in the settings of iOS: no button to save. A profile picked gives the tabs of its
   // sides first; the rest stays as set.
@@ -116,11 +137,13 @@ export function setupDisplay({ settings, people, me, onSave }) {
       for (const tab of /** @type {HTMLInputElement[]} */ ([...dialog.querySelectorAll('input[name="tab"]')])) {
         tab.checked = tabs[/** @type {keyof ReviewSettings['tabs']} */ (tab.value)]
       }
+      placeProfile()
     }
     onSave(readChoices(), pickedMe())
   })
   $('[data-reviews-display-reset]').addEventListener('click', () => {
     renderChoices(defaultSettings(readChoices().profile), people(), pickedMe())
+    placeProfile()
     onSave(readChoices(), pickedMe())
   })
   dialog.addEventListener('click', (event) => {

@@ -39,7 +39,7 @@ export function openSettings(options, favorites) {
               { className: 'reviews-settings-repo' },
               el('input', { type: 'checkbox', name: 'favorite', value: repo, checked: favorites.has(repo) }),
               el('span', { className: 'repo-name', textContent: repo }),
-              el('span', { className: 'repo-count', textContent: formatNumber(count), title: t('PR ouvertes') }),
+              el('span', { className: 'repo-count', textContent: t(count > 1 ? '{count} PR ouvertes' : '{count} PR ouverte', { count: formatNumber(count) }) }),
             ),
           ),
         ),

@@ -14,7 +14,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 4px 14px;
-  align-items: baseline;
+  align-items: center;
 }
 
 .review-mine-head h2 {

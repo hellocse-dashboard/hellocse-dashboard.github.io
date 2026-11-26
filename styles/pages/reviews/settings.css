@@ -87,6 +87,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  align-items: center;
   justify-content: flex-end;
   padding: 12px 20px 16px;
   border-top: 1px solid var(--border);
@@ -280,4 +281,45 @@
   gap: 8px;
   width: 100%;
   margin-top: 10px;
+}
+
+/* The profile of « Affichage »: a segmented control, as in iOS, its pill gliding to the profile picked
+   (pages/reviews/indicator.js); each radio hidden, its label a segment, the keyboard still on it. */
+.reviews-segmented {
+  position: relative;
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  padding: 3px;
+  border-radius: 12px;
+  background: var(--segment);
+}
+
+.reviews-segment {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  padding: 7px 10px;
+  border-radius: 9px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.reviews-segment:has(input:checked) {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.reviews-segment input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.reviews-segment:has(input:focus-visible) {
+  outline: 3px solid color-mix(in srgb, var(--series-1) 40%, transparent);
+  outline-offset: 1px;
 }
