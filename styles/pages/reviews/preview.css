@@ -13,11 +13,15 @@
   box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--series-1);
 }
 
+.review-preview-actions {
+  display: flex;
+  margin: 2px 0 0;
+}
+
 .review-github {
   display: inline-flex;
   gap: 6px;
   align-items: center;
-  margin-left: auto;
   padding: 4px 12px;
   border: 1px solid var(--border);
   border-radius: 999px;

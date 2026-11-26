@@ -9,15 +9,17 @@ import { formatRelative } from '../../lib/format.js'
 import { boardColumns, filterItems, personalLists, repoOptions, reviewItems, urgentItems } from '../../model/reviews.js'
 import { reloadForNewBuild } from '../../services/build.js'
 import { fetchVersion, forgetReviewsKey, loadReviews, readReviewsKey, unlockReviews } from '../../services/reviews-source.js'
-import { $, $$, el } from '../../ui/dom.js'
+import { $, $$, el, svg } from '../../ui/dom.js'
 import { FORGOTTEN_ROUTE, ME_ROUTE, renderForgotten, renderSide, renderSummary, renderTabs, SIDE_ROUTES, TMA_ROUTE } from './board.js'
 import { readSettings, visibleTabs } from '../../model/review-settings.js'
 import { setupDisplay } from './display.js'
+import { moveIndicator } from './indicator.js'
 import { setupPreview } from './preview.js'
 import { openWelcome, setupWelcome, WELCOME_VERSION } from './welcome.js'
 import { setupSettings } from './settings.js'
 import { renderRepoFilter, setupRepoFilter } from './repo-filter.js'
-import { notificationsOn, notifyNewItems, renderMine, renderNotifyToggle, toggleNotifications } from './mine.js'
+import { notificationsOn, notifyNewItems, renderMine } from './mine.js'
+import { renderNotifications, setupNotifications } from './notifications.js'
 import { AUTO_SYNC_MINUTES, autoSync, canSyncNow, nextAutoSyncAt, settleSync, syncNow, syncState } from './sync.js'
 
 /** @typedef {import('../../model/reviews.js').ReviewItem} ReviewItem */
@@ -101,6 +103,9 @@ const board = {
     }
   })(),
   query: '',
+  // The page last drawn: a page reached anew enters.
+  /** @type {string | null} */
+  shownRoute: null,
   settings: readSettings((() => {
     try {
       return JSON.parse(stored(SETTINGS_STORAGE_KEY) ?? 'null')
@@ -170,6 +175,13 @@ export function render() {
   // The page of a side leaves the TMA to its own tab.
   const onSide = (/** @type {Category} */ side) => shown.filter((item) => item.side === side && !item.hotfix)
   const route = currentRoute(sides)
+  // A page reached anew enters: its figures and cards rise one after the other; a mere refresh draws it still.
+  if (route !== board.shownRoute) {
+    board.shownRoute = route
+    // Its colors tint the halos behind the page, slightly.
+    document.body.dataset.tab = route
+    enter(route === ME_ROUTE ? '[data-reviews-me-page]' : '[data-reviews-list-page]')
+  }
   const side = sides.find((other) => SIDE_ROUTES[other] === route) ?? null
   const forgotten = shown.filter((item) => item.lane === 'forgotten')
   const tma = shown.filter((item) => item.hotfix)
@@ -214,9 +226,14 @@ export function render() {
   for (const button of document.querySelectorAll('[data-reviews-order] button')) {
     button.setAttribute('aria-pressed', String(button.getAttribute('data-value') === board.order))
   }
+  // The pills of the order and of the scope glide to the segment picked.
+  for (const control of [$('[data-reviews-order]'), $('[data-reviews-scope]')]) {
+    moveIndicator(control, control.querySelector('button[aria-pressed="true"]'))
+  }
   const waiting = lists ? urgentItems(lists).length : 0
   document.title = waiting ? `(${waiting}) ${t('Relectures')}` : t('Relectures')
   notifyNewItems(context, lists)
+  renderNotifications(context, lists)
 }
 
 // When the data was generated, and the automatic sync: on its way, or when the next one starts (every AUTO_SYNC_MINUTES
@@ -227,45 +244,50 @@ function renderSyncLine() {
   if (!reviews) {
     return
   }
-  const syncing = syncState.awaitedSince !== null
+  const syncing = syncState.awaitedSince !== null || syncState.busy
   const next = nextAutoSyncAt(reviews)
   const minutes = next === null ? 0 : Math.ceil((next - Date.now()) / 60_000)
+  // Fresh while the data is younger than two automatic syncs; old beyond.
+  const fresh = Date.now() - Date.parse(reviews.generatedAt) < 2 * AUTO_SYNC_MINUTES * 60_000
+  const state = syncing ? 'is-syncing' : next === null ? 'is-off' : fresh ? 'is-live' : 'is-stale'
   line.classList.toggle('is-syncing', syncing)
-  // The button: only once the data is older than AUTO_SYNC_MINUTES, never while a sync is on its way.
-  const button = el('button', {
-    type: 'button',
-    className: 'reviews-sync-now',
-    disabled: !canSyncNow(reviews),
-    textContent: syncState.busy ? t('Lancement…') : t('Resynchroniser'),
-    title:
-      next === null
-        ? t('Synchro indisponible : aucun token de dispatch')
-        : syncing
-          ? t('Une synchro est déjà en cours')
-          : canSyncNow(reviews)
-            ? t('Lancer une synchro rapide maintenant')
-            : t('Les données ont moins de {minutes} minutes : pas besoin de resynchroniser', { minutes: AUTO_SYNC_MINUTES }),
-  })
+  // The button, an icon in the capsule: only once the data is older than AUTO_SYNC_MINUTES, never while a sync is on
+  // its way.
+  const label = next === null
+    ? t('Synchro indisponible : aucun token de dispatch')
+    : syncing
+      ? t('Une synchro est déjà en cours')
+      : canSyncNow(reviews)
+        ? t('Lancer une synchro rapide maintenant')
+        : t('Les données ont moins de {minutes} minutes : pas besoin de resynchroniser', { minutes: AUTO_SYNC_MINUTES })
+  const icon = svg('svg', { viewBox: '0 0 16 16', 'aria-hidden': 'true' })
+  icon.append(svg('path', { d: 'M13 5.5A5.5 5.5 0 0 0 3.2 4.3M3 2.5v2.2h2.2M3 10.5a5.5 5.5 0 0 0 9.8 1.2M13 13.5v-2.2h-2.2' }))
+  const button = el('button', { type: 'button', className: 'reviews-sync-now', disabled: !canSyncNow(reviews), title: label, ariaLabel: `${t('Resynchroniser')} : ${label}` }, icon)
   button.addEventListener('click', async () => {
     const started = syncNow(reviews)
     renderSyncLine()
     await started
     renderSyncLine()
   })
+  const sub = syncing
+    ? t('Synchro en cours…')
+    : next === null
+      ? t('Synchro auto désactivée')
+      : minutes <= 1
+        ? t('prochaine synchro dans moins d’une minute')
+        : t('prochaine synchro dans {minutes} min', { minutes })
   line.replaceChildren(
-    el('span', { textContent: t('Mis à jour {time}', { time: formatRelative(reviews.generatedAt) }), title: new Date(reviews.generatedAt).toLocaleString() }),
-    el('span', {
-      className: `reviews-auto-sync${syncing ? ' is-syncing' : next === null ? ' is-off' : ''}`,
-      title: t('Tant que cette page est affichée, elle lance une synchro rapide dès que ses données ont plus de {minutes} minutes, sauf si une synchro vient d’être lancée, depuis cette page ou le tableau de bord.', { minutes: AUTO_SYNC_MINUTES }),
-      textContent: syncing
-        ? t('Synchro en cours…')
-        : next === null
-          ? t('Synchro auto désactivée')
-          : `${t('Synchro auto toutes les {minutes} min', { minutes: AUTO_SYNC_MINUTES })} · ${
-              minutes <= 1 ? t('la prochaine dans moins d’une minute') : t('la prochaine dans {minutes} min', { minutes })
-            }`,
-    }),
-    ...(next === null ? [] : [button]),
+    el(
+      'span',
+      {
+        className: `reviews-status ${state}`,
+        title: `${new Date(reviews.generatedAt).toLocaleString()} · ${t('Tant que cette page est affichée, elle lance une synchro rapide dès que ses données ont plus de {minutes} minutes, sauf si une synchro vient d’être lancée, depuis cette page ou le tableau de bord.', { minutes: AUTO_SYNC_MINUTES })}`,
+      },
+      el('span', { className: 'reviews-status-dot', ariaHidden: 'true' }),
+      el('span', { className: 'reviews-status-main', textContent: t('Mis à jour {time}', { time: formatRelative(reviews.generatedAt) }) }),
+      el('span', { className: 'reviews-status-sub', textContent: sub }),
+      ...(next === null ? [] : [button]),
+    ),
     ...(syncState.failed ? [el('span', { className: 'reviews-sync-error', textContent: t('La synchro n’a pas pu être lancée : le token est peut-être expiré.') })] : []),
   )
 }
@@ -358,8 +380,30 @@ function lock(message) {
   showLock(message)
 }
 
+// The entrance of a page, for as long as it plays.
+const ENTRANCE_MS = 900
+/** @type {ReturnType<typeof setTimeout> | undefined} */
+let entranceTimer
+/** @param {string} selector */
+function enter(selector) {
+  const page = $(selector)
+  for (const other of document.querySelectorAll('.is-entering')) {
+    other.classList.remove('is-entering')
+  }
+  void page.offsetWidth
+  page.classList.add('is-entering')
+  clearTimeout(entranceTimer)
+  entranceTimer = setTimeout(() => page.classList.remove('is-entering'), ENTRANCE_MS)
+}
+
+/** @type {ReturnType<typeof setTimeout> | undefined} */
+let themeTimer
 function toggleTheme() {
   const root = document.documentElement
+  // Colours cross-fade for a moment rather than switching at once.
+  root.classList.add('is-theme-changing')
+  clearTimeout(themeTimer)
+  themeTimer = setTimeout(() => root.classList.remove('is-theme-changing'), 450)
   const dark = (root.dataset.theme ?? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')) === 'dark'
   root.dataset.theme = dark ? 'light' : 'dark'
   store(THEME_STORAGE_KEY, root.dataset.theme)
@@ -481,13 +525,33 @@ export function setupReviews() {
     },
   })
   setupPreview()
-  const notify = $('[data-reviews-notify]', HTMLButtonElement)
-  notify.addEventListener('click', () => toggleNotifications(notify))
-  renderNotifyToggle(notify)
+  // The light that follows the pointer over a figure (styles/pages/reviews/brand.css).
+  $('[data-reviews-summary]').addEventListener('pointermove', (event) => {
+    const figure = /** @type {HTMLElement} */ (event.target).closest('.review-figure')
+    if (figure instanceof HTMLElement) {
+      const box = figure.getBoundingClientRect()
+      figure.style.setProperty('--mx', `${event.clientX - box.left}px`)
+      figure.style.setProperty('--my', `${event.clientY - box.top}px`)
+    }
+  })
+  setupNotifications()
   $('[data-reviews-theme]').addEventListener('click', toggleTheme)
+  // Locking asks first, in a dialog of the board: « Verrouiller » forgets the key on this device.
+  const lockDialog = $('[data-reviews-lock-dialog]', HTMLDialogElement)
   $('[data-reviews-lock-now]').addEventListener('click', () => {
-    if (confirm(t('Verrouiller le tableau des relectures sur cet appareil ?'))) {
+    lockDialog.returnValue = ''
+    lockDialog.showModal()
+    // The dialog takes the focus itself: no choice ringed before a key is pressed, Tab goes to them.
+    lockDialog.focus()
+  })
+  lockDialog.addEventListener('close', () => {
+    if (lockDialog.returnValue === 'confirm') {
       lock()
+    }
+  })
+  lockDialog.addEventListener('click', (event) => {
+    if (event.target === lockDialog) {
+      lockDialog.close()
     }
   })
   // A tab, or an address pasted: its page.

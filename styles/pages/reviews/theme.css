@@ -1,106 +1,199 @@
-/* The board of the reviews (reviews.html) in the design system of the team's products: Roboto for the text, Oswald for the titles
-   and figures, its palette (main blue, accent orange, positive green, negative red, quaternary yellow, tertiary purple,
-   dark blue content) on the tokens of styles/base.css, light and dark, and its clickable cards. Loaded right after
-   base.css, by this page only: every style of the board reads these tokens. */
+/* The board of the reviews (reviews.html) in a glass design, after the system look of Apple: the font of the system
+   (SF Pro on a Mac, nothing to load), its colors (blue, orange, green, red, yellow, pink, gray), a soft page with blurred
+   halos of color behind frosted surfaces, large radii, light and dark. Loaded right after base.css, by this page only:
+   every style of the board reads these tokens; brand.css, loaded last, draws the glass. */
 
 :root {
-  /* The palette of the design system, as plain values. */
-  --ds-main: #168ebd;
-  --ds-main-xslight: #35b5b4;
-  --ds-main-slight: #c7e4ef;
-  --ds-main-light: #e8f4f8;
-  --ds-main-xlight: #f3f9fc;
-  --ds-secondary: #e3077a;
-  --ds-tertiary: #945bea;
-  --ds-quaternary: #fdcd00;
-  --ds-quaternary-dark: #f5c800;
-  /* A darker yellow for a text or a ring on the yellow, which the palette lacks. */
-  --ds-quaternary-ink: #8a6d00;
-  --ds-content: #004660;
-  --ds-content-xdark: #0e131b;
-  --ds-content-dark: #2d384e;
-  --ds-content-ldark: #151c29;
-  --ds-content-light: #d9e3e7;
-  --ds-accent: #f18724;
-  --ds-accent-slight: #fff5e8;
-  --ds-disabled: #808080;
-  --ds-disabled-slight: #afbfc6;
-  --ds-disabled-light: #cccccc;
-  --ds-disabled-xlight: #e5e5e5;
-  --ds-disabled-glight: #f6f6f6;
-  --ds-disabled-2xlight: #e1e8eb;
-  --ds-positive: #50ac5e;
-  /* A darker green for the lines added, readable on white, which the palette lacks. */
-  --ds-positive-ink: #2f7d3b;
-  --ds-positive-slight: #edf7ef;
-  --ds-negative: #ce2b36;
-  --ds-negative-slight: #ff7a5c;
-  --ds-negative-light: #f8f2f4;
+  /* The colors of the system, light. */
+  --glass-blue: #007aff;
+  --glass-indigo: #5856d6;
+  --glass-purple: #af52de;
+  --glass-pink: #ff2d55;
+  --glass-red: #ff3b30;
+  --glass-orange: #ff9500;
+  --glass-yellow: #ffcc00;
+  --glass-green: #34c759;
+  --glass-teal: #30b0c7;
+  --glass-gray: #8e8e93;
 
-  /* A white page, as the products of the team: the blue of the brand is kept for what acts. */
-  --page: #ffffff;
-  --surface: #ffffff;
-  --surface-hover: var(--ds-main-light);
-  --text-primary: #1a1a1a;
-  --text-secondary: var(--ds-content-dark);
-  --text-muted: var(--ds-disabled);
-  --gridline: var(--ds-disabled-xlight);
-  --baseline: var(--ds-disabled-slight);
-  --border: var(--ds-disabled-2xlight);
-  --series-1: var(--ds-main);
-  --series-2: var(--ds-accent);
-  --series-3: var(--ds-tertiary);
-  --highlight: var(--ds-main-light);
-  --success-text: var(--ds-positive-ink);
-  --status-good: var(--ds-positive);
-  --status-serious: var(--ds-accent);
-  --notification: var(--ds-negative);
-  --diff-added: var(--ds-positive-ink);
-  --diff-deleted: var(--ds-negative);
-  --gold: var(--ds-quaternary);
-  --gold-ring: var(--ds-quaternary-ink);
-  --shadow: 0 4px 16px rgb(22 142 189 / 25%);
-  --radius: 12px;
-  --font: Roboto, system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-title: Oswald, Roboto, system-ui, sans-serif;
-  /* The titles in the dark blue of the brand. */
-  --title: var(--ds-content);
+  /* The glass: a surface that lets the halos through, blurred, with a light edge. */
+  --glass: rgb(255 255 255 / 62%);
+  --glass-strong: rgb(255 255 255 / 82%);
+  --glass-edge: rgb(255 255 255 / 70%);
+  --glass-line: rgb(60 60 67 / 12%);
+  --glass-blur: saturate(180%) blur(24px);
+  --glass-shadow: 0 1px 1px rgb(0 0 0 / 4%), 0 8px 28px rgb(31 41 80 / 9%);
+  --glass-shadow-raised: 0 2px 4px rgb(0 0 0 / 5%), 0 18px 44px rgb(31 41 80 / 16%);
+  --segment: rgb(118 118 128 / 12%);
+
+  --page: #f2f2f7;
+  --surface: var(--glass);
+  --surface-hover: rgb(255 255 255 / 85%);
+  --text-primary: #1d1d1f;
+  --text-secondary: #515154;
+  --text-muted: #86868b;
+  --gridline: var(--glass-line);
+  --baseline: #c7c7cc;
+  --border: var(--glass-line);
+  --series-1: var(--glass-blue);
+  --series-2: var(--glass-orange);
+  --series-3: var(--glass-purple);
+  --highlight: rgb(0 122 255 / 10%);
+  --success-text: #248a3d;
+  --status-good: var(--glass-green);
+  --status-serious: var(--glass-orange);
+  --notification: var(--glass-red);
+  --diff-added: #248a3d;
+  --diff-deleted: #d70015;
+  --gold: var(--glass-yellow);
+  --gold-ring: #b28600;
+  --shadow: var(--glass-shadow-raised);
+  --radius: 20px;
+  --font: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', 'Segoe UI', system-ui, sans-serif;
+  --font-title: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Segoe UI', system-ui, sans-serif;
+  --title: var(--text-primary);
+  /* The halos behind the page. */
+  --halo-1-alpha: 22%;
+  --halo-2: rgb(175 82 222 / 18%);
+  --halo-3-alpha: 18%;
+  --halo-4: rgb(255 45 85 / 10%);
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
-    --page: var(--ds-content-xdark);
-    --surface: var(--ds-content-ldark);
-    --surface-hover: var(--ds-content-dark);
-    --text-primary: #ffffff;
-    --text-secondary: var(--ds-content-light);
-    --text-muted: var(--ds-disabled-slight);
-    --gridline: #24304a;
-    --baseline: #3a4763;
-    --border: rgb(255 255 255 / 10%);
-    --highlight: rgb(22 142 189 / 22%);
-    --diff-added: var(--ds-positive);
-    --diff-deleted: var(--ds-negative-slight);
-    --success-text: var(--ds-positive);
-    --shadow: 0 16px 32px rgb(0 0 0 / 25%);
-    --title: #ffffff;
+    --glass-blue: #0a84ff;
+    --glass-indigo: #5e5ce6;
+    --glass-purple: #bf5af2;
+    --glass-pink: #ff375f;
+    --glass-red: #ff453a;
+    --glass-orange: #ff9f0a;
+    --glass-yellow: #ffd60a;
+    --glass-green: #30d158;
+    --glass-teal: #40c8e0;
+    --glass-gray: #98989d;
+    --glass: rgb(44 44 46 / 55%);
+    --glass-strong: rgb(44 44 46 / 82%);
+    --glass-edge: rgb(255 255 255 / 10%);
+    --glass-line: rgb(255 255 255 / 9%);
+    --glass-shadow: 0 1px 1px rgb(0 0 0 / 30%), 0 10px 30px rgb(0 0 0 / 35%);
+    --glass-shadow-raised: 0 2px 4px rgb(0 0 0 / 35%), 0 20px 50px rgb(0 0 0 / 55%);
+    --segment: rgb(118 118 128 / 24%);
+    --page: #000000;
+    --surface-hover: rgb(58 58 60 / 70%);
+    --text-primary: #f5f5f7;
+    --text-secondary: #c7c7cc;
+    --text-muted: #8e8e93;
+    --baseline: #48484a;
+    --highlight: rgb(10 132 255 / 22%);
+    --success-text: #30d158;
+    --diff-added: #30d158;
+    --diff-deleted: #ff6961;
+    --gold-ring: #ffd60a;
+    --halo-1-alpha: 30%;
+    --halo-2: rgb(191 90 242 / 24%);
+    --halo-3-alpha: 16%;
+    --halo-4: rgb(255 55 95 / 14%);
   }
 }
 
 :root[data-theme='dark'] {
-  --page: var(--ds-content-xdark);
-  --surface: var(--ds-content-ldark);
-  --surface-hover: var(--ds-content-dark);
-  --text-primary: #ffffff;
-  --text-secondary: var(--ds-content-light);
-  --text-muted: var(--ds-disabled-slight);
-  --gridline: #24304a;
-  --baseline: #3a4763;
-  --border: rgb(255 255 255 / 10%);
-  --highlight: rgb(22 142 189 / 22%);
-  --diff-added: var(--ds-positive);
-  --diff-deleted: var(--ds-negative-slight);
-  --success-text: var(--ds-positive);
-  --shadow: 0 16px 32px rgb(0 0 0 / 25%);
-  --title: #ffffff;
+  --glass-blue: #0a84ff;
+  --glass-indigo: #5e5ce6;
+  --glass-purple: #bf5af2;
+  --glass-pink: #ff375f;
+  --glass-red: #ff453a;
+  --glass-orange: #ff9f0a;
+  --glass-yellow: #ffd60a;
+  --glass-green: #30d158;
+  --glass-teal: #40c8e0;
+  --glass-gray: #98989d;
+  --glass: rgb(44 44 46 / 55%);
+  --glass-strong: rgb(44 44 46 / 82%);
+  --glass-edge: rgb(255 255 255 / 10%);
+  --glass-line: rgb(255 255 255 / 9%);
+  --glass-shadow: 0 1px 1px rgb(0 0 0 / 30%), 0 10px 30px rgb(0 0 0 / 35%);
+  --glass-shadow-raised: 0 2px 4px rgb(0 0 0 / 35%), 0 20px 50px rgb(0 0 0 / 55%);
+  --segment: rgb(118 118 128 / 24%);
+  --page: #000000;
+  --surface-hover: rgb(58 58 60 / 70%);
+  --text-primary: #f5f5f7;
+  --text-secondary: #c7c7cc;
+  --text-muted: #8e8e93;
+  --baseline: #48484a;
+  --highlight: rgb(10 132 255 / 22%);
+  --success-text: #30d158;
+  --diff-added: #30d158;
+  --diff-deleted: #ff6961;
+  --gold-ring: #ffd60a;
+  --halo-1-alpha: 30%;
+  --halo-2: rgb(191 90 242 / 24%);
+  --halo-3-alpha: 16%;
+  --halo-4: rgb(255 55 95 / 14%);
+}
+
+/* The two main halos are colors, registered as such so that they fade from one tab to the next. */
+@property --halo-1 {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --halo-3 {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: transparent;
+}
+
+/* The page: its halos of color, fixed behind everything, which the glass blurs. Each tab tints them slightly with its
+   own colors (data-tab, set by the board): blue for « Pour toi », orange for the back, and so on. */
+body {
+  --tab-a: var(--glass-blue);
+  --tab-b: var(--glass-teal);
+  --halo-1: color-mix(in srgb, var(--tab-a) var(--halo-1-alpha), transparent);
+  --halo-3: color-mix(in srgb, var(--tab-b) var(--halo-3-alpha), transparent);
+  transition: --halo-1 0.9s ease, --halo-3 0.9s ease;
+  background:
+    radial-gradient(60vw 50vh at 8% 0%, var(--halo-1), transparent 70%),
+    radial-gradient(50vw 45vh at 95% 10%, var(--halo-2), transparent 70%),
+    radial-gradient(55vw 50vh at 85% 100%, var(--halo-3), transparent 70%),
+    radial-gradient(45vw 40vh at 10% 95%, var(--halo-4), transparent 70%),
+    var(--page);
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+}
+
+body[data-tab='back'] {
+  --tab-a: var(--glass-orange);
+  --tab-b: var(--glass-yellow);
+}
+
+body[data-tab='front'] {
+  --tab-a: var(--glass-blue);
+  --tab-b: var(--glass-indigo);
+}
+
+body[data-tab='mobile'] {
+  --tab-a: var(--glass-purple);
+  --tab-b: var(--glass-indigo);
+}
+
+body[data-tab='autres'] {
+  --tab-a: var(--glass-gray);
+  --tab-b: var(--glass-teal);
+}
+
+body[data-tab='tma'] {
+  --tab-a: var(--glass-pink);
+  --tab-b: var(--glass-orange);
+}
+
+body[data-tab='oubliees'] {
+  --tab-a: var(--glass-red);
+  --tab-b: var(--glass-orange);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body {
+    transition: none;
+  }
 }

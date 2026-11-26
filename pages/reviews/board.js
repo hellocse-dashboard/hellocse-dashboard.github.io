@@ -10,6 +10,7 @@ import { visibleLanes } from '../../model/review-settings.js'
 import { boardSummary, LANES } from '../../model/reviews.js'
 import { el, svg } from '../../ui/dom.js'
 import { reviewCard } from './card.js'
+import { keptIndicator, moveIndicator } from './indicator.js'
 
 /** @typedef {import('./card.js').CardContext} CardContext */
 /** @typedef {import('../../model/reviews.js').ReviewItem} ReviewItem */
@@ -58,6 +59,7 @@ export function renderTabs(container, { route, shown, sides, waiting, tma, forgo
       ...badges,
     )
   container.replaceChildren(
+    ...keptIndicator(container),
     ...[
     tab(
       ME_ROUTE,
@@ -96,6 +98,8 @@ export function renderTabs(container, { route, shown, sides, waiting, tma, forgo
     ),
     ].filter((link) => shown.includes(/** @type {TabKey} */ ((link.getAttribute('href') ?? '').slice(2)))),
   )
+  // The pill glides to the tab of the page shown.
+  moveIndicator(container, container.querySelector('.reviews-tab.is-current'))
 }
 
 // The figures of a side, each the color of its lane; a click scrolls to it.
@@ -123,13 +127,21 @@ export function renderSummary(container, items, settings) {
     key === 'forgotten' ? settings.parts.forgotten : key === 'drafts' ? settings.parts.drafts : lanes.includes(/** @type {import('../../model/review-settings.js').KanbanLane} */ (key === 'waiting' ? 'review' : key))
   container.hidden = !settings.parts.figures
   container.replaceChildren(
-    ...SUMMARY.filter(({ key }) => shows(key)).map(({ key, label, lane }) => {
+    ...SUMMARY.filter(({ key }) => shows(key)).map(({ key, label, lane }, index) => {
       const figure = el(
         'button',
         { type: 'button', className: `review-figure is-${lane ?? key}${key === 'waiting' ? ' is-alert' : ''}${summary[key] ? '' : ' is-zero'}` },
         el('span', { className: 'review-figure-value', textContent: formatNumber(summary[key]) }),
         el('span', { className: 'review-figure-label', textContent: label }),
+        // The way to its lane, shown on hover.
+        (() => {
+          const arrow = svg('svg', { class: 'review-figure-arrow', viewBox: '0 0 16 16', 'aria-hidden': 'true' })
+          arrow.append(svg('path', { d: 'M6 3.5 10.5 8 6 12.5' }))
+
+          return arrow
+        })(),
       )
+      staggered(figure, index)
       figure.addEventListener('click', () => {
         if (key === 'forgotten') {
           location.hash = `#/${FORGOTTEN_ROUTE}`
@@ -192,6 +204,20 @@ function byAge(lane, order = 'oldest') {
   const at = lane === 'forgotten' ? (item) => item.lastAt : lane === 'drafts' ? (item) => item.createdAt : (item) => item.since
 
   return order === 'newest' ? (a, b) => at(b) - at(a) : (a, b) => at(a) - at(b)
+}
+
+// The rank of an element in the entrance of a page (styles/pages/reviews/brand.css), its first dozen one after the
+// other, the others with the last of them.
+/**
+ * @template {HTMLElement} Node
+ * @param {Node} node
+ * @param {number} index
+ * @returns {Node}
+ */
+export function staggered(node, index) {
+  node.style.setProperty('--i', String(Math.min(index, 12)))
+
+  return node
 }
 
 // The picker of the layout of a kanban of a single lane, at the top right of its lane: its cards in a grid, or in a
@@ -272,7 +298,7 @@ export function renderSide(container, context, side, items, redraw, settings) {
             el('div', { className: 'review-lane-top' }, laneTitle(lane, cards.length), ...(lanes.length === 1 ? [layoutToggle(context)] : [])),
             ...(settings.parts.hints ? [el('p', { className: 'review-lane-hint', textContent: LANE_LABELS[lane].hint })] : []),
           ),
-          ...(cards.length ? cards.map((item) => reviewCard(context, item)) : [el('p', { className: 'review-empty', textContent: EMPTY[lane] })]),
+          ...(cards.length ? cards.map((item, index) => staggered(reviewCard(context, item), index)) : [el('p', { className: 'review-empty', textContent: EMPTY[lane] })]),
         )
       }),
     ),
@@ -296,7 +322,7 @@ export function renderSide(container, context, side, items, redraw, settings) {
         'section',
         { className: `review-section is-${lane}${shut ? ' is-folded' : ''}` },
         toggle,
-        ...(shut ? [] : [cards.length ? el('div', { className: 'review-grid' }, ...cards.map((item) => reviewCard(context, item))) : el('p', { className: 'review-empty', textContent: t('Aucune') })]),
+        ...(shut ? [] : [cards.length ? el('div', { className: 'review-grid' }, ...cards.map((item, index) => staggered(reviewCard(context, item), index))) : el('p', { className: 'review-empty', textContent: t('Aucune') })]),
       )
     }),
   )
@@ -309,6 +335,29 @@ export function renderSide(container, context, side, items, redraw, settings) {
   }
 }
 
+// The mark of the forgotten pull requests: a clock, time gone by without anyone.
+function sleepingIcon() {
+  const icon = svg('svg', { viewBox: '0 0 24 24', 'aria-hidden': 'true' })
+  icon.append(svg('circle', { cx: '12', cy: '12', r: '8.5' }), svg('path', { d: 'M12 7.5V12l3 2' }))
+
+  return icon
+}
+
+// What the forgotten pull requests are and what to do with them, atop their page.
+function forgottenIntro() {
+  return el(
+    'div',
+    { className: 'review-forgotten-intro' },
+    el('span', { className: 'review-forgotten-intro-icon' }, sleepingIcon()),
+    el(
+      'p',
+      {},
+      el('strong', { textContent: t('Plus aucune review ni commentaire depuis plus de 30 jours.') }),
+      el('span', { textContent: t('À relancer auprès de leurs relecteurs, à reprendre, ou à fermer si elles n’ont plus lieu d’être.') }),
+    ),
+  )
+}
+
 /**
  * The page of the forgotten pull requests: those of every side, side by side, the longest forgotten first.
  * @param {HTMLElement} container
@@ -318,12 +367,8 @@ export function renderSide(container, context, side, items, redraw, settings) {
 export function renderForgotten(container, context, sides) {
   const shown = sides.filter(({ items }) => items.length)
   container.replaceChildren(
-    el(
-      'p',
-      { className: 'review-forgotten-intro' },
-      el('strong', { textContent: t('Plus aucune review ni commentaire depuis plus de 30 jours.') }),
-      document.createTextNode(` ${t('À relancer auprès de leurs relecteurs, à reprendre, ou à fermer si elles n’ont plus lieu d’être.')}`),
-    ),
+    // What they are and what to do with them, unless the viewer hid it.
+    ...(context.settings?.parts.forgottenIntro === false ? [] : [forgottenIntro()]),
     ...(shown.length
       ? shown.map(({ side, items }) =>
           el(

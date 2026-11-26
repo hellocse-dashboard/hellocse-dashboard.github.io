@@ -25,6 +25,7 @@ const PAGE_PARTS = {
   figures: t('Les compteurs en haut de page'),
   hints: t('Ce que veut dire chaque colonne'),
   forgotten: t('Le bandeau des PR oubliées'),
+  forgottenIntro: t('L’explication en haut des PR oubliées'),
   drafts: t('Les brouillons, sous le kanban'),
 }
 const CARD_PARTS = {
@@ -92,7 +93,7 @@ function readChoices() {
 }
 
 /**
- * Listens to the sliders, the dialog and its buttons; saving gives the settings and who the viewer is.
+ * Listens to the sliders, the dialog and its buttons; each change gives the settings and who the viewer is, at once.
  * @param {{
  *   settings: () => ReviewSettings, people: () => { login: string, name: string }[], me: () => string | null,
  *   onSave: (settings: ReviewSettings, me: string | null) => void,
@@ -106,7 +107,8 @@ export function setupDisplay({ settings, people, me, onSave }) {
     renderChoices(settings(), people(), me())
     dialog.showModal()
   })
-  // A profile picked: the tabs of its sides, at once; the rest stays as set.
+  // Any change applies at once, as in the settings of iOS: no button to save. A profile picked gives the tabs of its
+  // sides first; the rest stays as set.
   dialog.addEventListener('change', (event) => {
     const input = /** @type {HTMLInputElement} */ (event.target)
     if (input.name === 'profile') {
@@ -115,12 +117,11 @@ export function setupDisplay({ settings, people, me, onSave }) {
         tab.checked = tabs[/** @type {keyof ReviewSettings['tabs']} */ (tab.value)]
       }
     }
+    onSave(readChoices(), pickedMe())
   })
-  $('[data-reviews-display-reset]').addEventListener('click', () => renderChoices(defaultSettings(readChoices().profile), people(), pickedMe()))
-  $('[data-reviews-display-form]').addEventListener('submit', (event) => {
-    if (/** @type {SubmitEvent} */ (event).submitter?.getAttribute('value') === 'save') {
-      onSave(readChoices(), pickedMe())
-    }
+  $('[data-reviews-display-reset]').addEventListener('click', () => {
+    renderChoices(defaultSettings(readChoices().profile), people(), pickedMe())
+    onSave(readChoices(), pickedMe())
   })
   dialog.addEventListener('click', (event) => {
     if (event.target === dialog) {

@@ -108,25 +108,19 @@ export function notificationsOn() {
   }
 }
 
+// The bell lights up while the browser notifies.
 /** @param {HTMLButtonElement} button */
 export function renderNotifyToggle(button) {
-  button.hidden = !notificationsSupported()
-  if (button.hidden) {
-    return
-  }
-  button.disabled = Notification.permission === 'denied'
   button.setAttribute('aria-pressed', String(notificationsOn()))
-  button.title = button.disabled
-    ? t('Notifications bloquées par le navigateur')
-    : notificationsOn()
-      ? t('Ne plus me notifier')
-      : t('Me notifier des nouvelles PR qui m’attendent')
 }
 
-/** @param {HTMLButtonElement} button */
-export async function toggleNotifications(button) {
+/**
+ * Turns the notifications of the browser on (asking its permission first) or off; gives what they are now.
+ * @param {boolean} wanted
+ */
+export async function switchNotifications(wanted) {
   let on = false
-  if (!notificationsOn()) {
+  if (wanted && notificationsSupported()) {
     const permission = Notification.permission === 'granted' ? 'granted' : await Notification.requestPermission()
     on = permission === 'granted'
   }
@@ -139,7 +133,8 @@ export async function toggleNotifications(button) {
   } catch {
     // Storage can be unavailable: notifications only last for this page.
   }
-  renderNotifyToggle(button)
+
+  return notificationsOn()
 }
 
 /** @param {{ list: string, pr: { repo: string, number: number } }} item */

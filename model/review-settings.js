@@ -8,7 +8,7 @@
 /** @typedef {'fullstack' | 'back' | 'front' | 'mobile'} Profile */
 /** @typedef {'pour-toi' | 'back' | 'front' | 'mobile' | 'autres' | 'tma' | 'oubliees'} TabKey */
 /** @typedef {'review' | 'owners' | 'changes' | 'ready'} KanbanLane */
-/** @typedef {'figures' | 'hints' | 'forgotten' | 'drafts' | 'labels' | 'files' | 'size' | 'waiters' | 'linked'} Part */
+/** @typedef {'figures' | 'hints' | 'forgotten' | 'forgottenIntro' | 'drafts' | 'labels' | 'files' | 'size' | 'waiters' | 'linked'} Part */
 /**
  * @typedef {{ revision?: number, profile: Profile, tabs: Record<TabKey, boolean>, lanes: Record<KanbanLane, boolean>, parts: Record<Part, boolean> }}
  *   ReviewSettings
@@ -30,10 +30,11 @@ export const PROFILES = ['fullstack', 'back', 'front', 'mobile']
 export const TAB_KEYS = ['pour-toi', 'back', 'front', 'mobile', 'autres', 'tma', 'oubliees']
 /** @type {KanbanLane[]} */
 export const KANBAN_LANES = ['review', 'owners', 'changes', 'ready']
-// The parts of the pages (the figures, the hints of the lanes, the band of the forgotten pull requests, the drafts) and
+// The parts of the pages (the figures, the hints of the lanes, the band of the forgotten pull requests, what the page of
+// the forgotten ones says they are, the drafts) and
 // of the cards (their labels, the files they change, their size in lines, who they wait for, their other side).
 /** @type {Part[]} */
-export const PARTS = ['figures', 'hints', 'forgotten', 'drafts', 'labels', 'files', 'size', 'waiters', 'linked']
+export const PARTS = ['figures', 'hints', 'forgotten', 'forgottenIntro', 'drafts', 'labels', 'files', 'size', 'waiters', 'linked']
 
 // The tabs of the sides of a profile: one side, or every side for a full-stack developer.
 /** @type {Record<Profile, TabKey[]>} */
@@ -60,7 +61,7 @@ export function defaultSettings(profile = 'fullstack') {
     profile,
     tabs,
     lanes: { review: true, owners: false, changes: false, ready: false },
-    parts: { figures: true, hints: true, forgotten: false, drafts: false, labels: true, files: true, size: true, waiters: true, linked: false },
+    parts: { figures: true, hints: true, forgotten: false, forgottenIntro: true, drafts: false, labels: true, files: true, size: true, waiters: true, linked: false },
   }
 }
 

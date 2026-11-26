@@ -1,6 +1,6 @@
 // The settings of the board of the reviews, behind the gear of its head: the viewer's favorite repositories, picked in a
-// dialog (grouped by side, each with its open pull requests, a search to find one), kept in this browser. Saving applies
-// them at once to the repository filter (every repository without any).
+// dialog (grouped by side, each with its open pull requests, a search to find one), kept in this browser. Each one
+// switched on or off applies at once to the repository filter (every repository without any).
 
 import { formatNumber, plural } from '../../lib/format.js'
 import { t } from '../../lib/i18n.js'
@@ -67,7 +67,7 @@ function filterList(query) {
 // How many favorites are checked, on the save button.
 function renderCount() {
   const count = document.querySelectorAll('[data-reviews-settings] input[name="favorite"]:checked').length
-  $('[data-reviews-settings-save]').textContent = count ? t('Enregistrer ({count})', { count: plural(count, 'favori') }) : t('Enregistrer (aucun favori)')
+  $('[data-reviews-settings-count]').textContent = count ? plural(count, 'favori') : t('Aucun favori')
 }
 
 /**
@@ -78,19 +78,21 @@ export function setupSettings({ options, favorites, onSave }) {
   const dialog = $('[data-reviews-settings]', HTMLDialogElement)
   $('[data-reviews-settings-open]').addEventListener('click', () => openSettings(options(), favorites()))
   $('[data-reviews-settings-search]').addEventListener('input', (event) => filterList(/** @type {HTMLInputElement} */ (event.target).value))
-  dialog.addEventListener('change', renderCount)
+  // Any favorite switched on or off applies at once: no button to save.
+  const save = () => {
+    renderCount()
+    onSave(new Set([...dialog.querySelectorAll('input[name="favorite"]:checked')].map((input) => /** @type {HTMLInputElement} */ (input).value)))
+  }
+  dialog.addEventListener('change', (event) => {
+    if (/** @type {HTMLInputElement} */ (event.target).name === 'favorite') {
+      save()
+    }
+  })
   $('[data-reviews-settings-clear]').addEventListener('click', () => {
     for (const input of dialog.querySelectorAll('input[name="favorite"]')) {
       /** @type {HTMLInputElement} */ (input).checked = false
     }
-    renderCount()
-  })
-  $('[data-reviews-settings-form]').addEventListener('submit', (event) => {
-    if (/** @type {SubmitEvent} */ (event).submitter?.getAttribute('value') !== 'save') {
-      return
-    }
-    const checked = [...dialog.querySelectorAll('input[name="favorite"]:checked')].map((input) => /** @type {HTMLInputElement} */ (input).value)
-    onSave(new Set(checked))
+    save()
   })
   // Closes on its backdrop.
   dialog.addEventListener('click', (event) => {

@@ -64,6 +64,14 @@ function checksIcon(checks) {
   return [icon]
 }
 
+// The icon of the files a pull request changes: two sheets, drawn with a line in the color of the text.
+function filesIcon() {
+  const icon = svg('svg', { class: 'review-files-icon', viewBox: '0 0 16 16', 'aria-hidden': 'true' })
+  icon.append(svg('path', { d: 'M5.5 2.5h5l3 3v7a1 1 0 0 1-1 1h-7a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1Z' }), svg('path', { d: 'M10.5 2.5v3h3M2.5 5v8.5a1 1 0 0 0 1 1h7' }))
+
+  return icon
+}
+
 // How long it has waited where it stands, after its lane, in working time.
 /** @type {Record<string, (time: string) => string>} */
 const WAITED = {
@@ -113,7 +121,7 @@ function waiter(context, login) {
  * @param {CardContext} context
  * @param {ReviewItem} item
  */
-function waitedFor(context, item) {
+export function waitedFor(context, item) {
   /** @type {[string, (string | null)[]][]} */
   const groups =
     item.lane === 'owners'
@@ -169,7 +177,7 @@ function linkedLines(context, item) {
  * @param {ReviewItem} item
  * @param {{ className: string, textContent: string, title: string }} properties
  */
-function previewLink(context, item, properties) {
+export function previewLink(context, item, properties) {
   const link = el('a', { ...properties, href: prUrl(context, item), target: '_blank', rel: 'noopener' })
   link.addEventListener('click', (event) => {
     if (plainClick(event)) {
@@ -222,7 +230,7 @@ export function reviewCard(context, item) {
       waitedTag(item),
       // The files it changes, when the sync read them and the viewer shows them.
       ...(context.settings?.parts.files !== false && item.files !== null
-        ? [el('span', { className: 'review-files', title: t('Fichiers modifiés'), textContent: `🗂 ${plural(item.files, 'fichier')}` })]
+        ? [el('span', { className: 'review-files', title: t('Fichiers modifiés') }, filesIcon(), document.createTextNode(plural(item.files, 'fichier')))]
         : []),
       // Its size, once the viewer shows it; the lines deleted, when the sync tells them.
       ...(context.settings?.parts.size === false

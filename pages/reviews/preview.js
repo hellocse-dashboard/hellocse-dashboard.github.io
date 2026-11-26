@@ -242,8 +242,9 @@ export function openPreview(context, item, opener) {
       ...(typeof record.files === 'number' ? [el('span', { textContent: plural(record.files, 'fichier modifié', 'fichiers modifiés') })] : []),
       el('span', {}, el('span', { className: 'review-added', textContent: `+${formatLines(record.lines)}` }), ...(record.deleted ? [document.createTextNode(' '), el('span', { className: 'review-deleted', textContent: `−${formatLines(record.deleted)}` })] : []), document.createTextNode(` ${t('lignes')}`)),
       ...(check ? [el('span', { className: `pr-checks is-${check[0]}`, textContent: check[1] })] : []),
-      githubLink(prUrl(context, item)),
     ),
+    // GitHub, on a line of its own under what the pull request is, aligned with it.
+    el('p', { className: 'review-preview-actions' }, githubLink(prUrl(context, item))),
   )
 
   const figures = [

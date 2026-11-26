@@ -293,10 +293,9 @@ select.reviews-input {
   }
 }
 
-/* The star of the favorites, gold once some are picked (pages/reviews/reviews.js). */
+/* The star of the favorites, filled once some are picked (pages/reviews/reviews.js), in the color of the other icons. */
 .reviews-favorites.is-on svg {
-  fill: var(--gold);
-  stroke: var(--gold-ring);
+  fill: currentColor;
 }
 
 /* While a dialog is open (the preview of a pull request, the settings, the welcome), only the dialog scrolls: the board

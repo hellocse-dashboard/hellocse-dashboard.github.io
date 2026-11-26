@@ -135,12 +135,50 @@
   white-space: nowrap;
 }
 
+/* What the page of the forgotten pull requests holds: its mark, then what they are and what to do with them. */
 .review-forgotten-intro {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  border-radius: var(--radius);
+}
+
+.review-forgotten-intro p {
+  display: grid;
+  gap: 2px;
   margin: 0;
-  padding: 12px 14px;
-  border-left: 4px solid var(--notification);
-  border-radius: 0 10px 10px 0;
-  background: color-mix(in srgb, var(--notification) 7%, var(--surface));
+}
+
+.review-forgotten-intro strong {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.review-forgotten-intro p span {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.review-forgotten-intro-icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--notification) 14%, transparent);
+  color: var(--notification);
+}
+
+.review-forgotten-intro-icon svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .review-mine-alert {

@@ -3,6 +3,8 @@
 .reviews-settings {
   width: min(560px, calc(100vw - 32px));
   max-height: calc(100vh - 48px);
+  /* Only its list scrolls: the dialog itself never does, its borders aside. */
+  overflow: hidden;
   padding: 0;
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -18,7 +20,7 @@
 .reviews-settings-card {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
-  max-height: calc(100vh - 48px);
+  max-height: calc(100vh - 50px);
 }
 
 .reviews-settings-head {
@@ -140,4 +142,142 @@
   .reviews-welcome-profiles {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+}
+
+/* In the dialogs of settings, a choice turned on or off is a switch, as on iOS: its label at the left, the switch at
+   the right, gray when off, green when on, its knob gliding over. */
+.reviews-settings .reviews-settings-repo:has(input[type='checkbox']) {
+  justify-content: space-between;
+}
+
+.reviews-settings .reviews-settings-repo input[type='checkbox'] {
+  position: relative;
+  flex: none;
+  order: 2;
+  width: 44px;
+  height: 26px;
+  margin: 0 0 0 auto;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text-muted) 32%, transparent);
+  cursor: pointer;
+  appearance: none;
+  transition: background-color 0.25s ease;
+}
+
+.reviews-settings .reviews-settings-repo input[type='checkbox']::before {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 2px 4px rgb(0 0 0 / 18%), 0 0 1px rgb(0 0 0 / 20%);
+  content: '';
+  transition: transform 0.25s cubic-bezier(0.3, 0.7, 0.2, 1.2);
+}
+
+.reviews-settings .reviews-settings-repo input[type='checkbox']:checked {
+  background: #34c759;
+}
+
+.reviews-settings .reviews-settings-repo input[type='checkbox']:checked::before {
+  transform: translateX(18px);
+}
+
+.reviews-settings .reviews-settings-repo input[type='checkbox']:focus-visible {
+  outline: 3px solid color-mix(in srgb, #34c759 45%, transparent);
+  outline-offset: 2px;
+}
+
+/* The count of a favorite repository sits beside its name, its switch at the far right. */
+.reviews-settings .reviews-settings-repo .repo-count {
+  margin-left: auto;
+}
+
+.reviews-settings .reviews-settings-repo .repo-count + input,
+.reviews-settings .reviews-settings-repo:has(.repo-count) input[type='checkbox'] {
+  margin-left: 12px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reviews-settings .reviews-settings-repo input[type='checkbox'],
+  .reviews-settings .reviews-settings-repo input[type='checkbox']::before {
+    transition: none;
+  }
+}
+
+/* The list of a dialog takes the focus when the dialog opens, as a box that scrolls: no ring around it, its own
+   choices keep theirs. */
+.reviews-settings-list:focus,
+.reviews-settings-list:focus-visible {
+  outline: none;
+}
+
+.reviews-settings-count {
+  margin-left: auto;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.reviews-settings-actions [data-reviews-settings-close],
+.reviews-settings-actions [data-reviews-display-close] {
+  min-width: 88px;
+}
+
+/* The confirmation of locking: a small dialog, its icon, its question, its two choices side by side. */
+.reviews-confirm {
+  width: min(360px, calc(100vw - 32px));
+}
+
+/* It takes the focus itself when it opens, so that no choice is ringed before a key is pressed. */
+.reviews-confirm:focus {
+  outline: none;
+}
+
+.reviews-confirm-card {
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+  padding: 26px 22px 20px;
+  text-align: center;
+}
+
+.reviews-confirm-icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 4px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--series-1) 14%, transparent);
+  color: var(--series-1);
+}
+
+.reviews-confirm-icon svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+
+.reviews-confirm-card h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.reviews-confirm-card p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.reviews-confirm-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  width: 100%;
+  margin-top: 10px;
 }

@@ -240,12 +240,15 @@
 
 /* A pull request of the TMA, in the secondary pink of the design system. */
 .review-tag.is-tma {
-  background: var(--ds-secondary, #e3077a);
+  background: var(--glass-pink, #ff2d55);
   color: #ffffff;
 }
 
 /* The files a pull request changes, quiet beside its wait. */
 .review-files {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
   color: var(--text-secondary);
   font-weight: 600;
   white-space: nowrap;
@@ -272,4 +275,13 @@
   line-height: 18px;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.review-files-icon {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linejoin: round;
 }
