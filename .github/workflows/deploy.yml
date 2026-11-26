@@ -1,0 +1,169 @@
+# The sync and the deployment of the dashboard, run by the public repository that serves it (the mirror,
+# PAGES_MIRROR_REPOSITORY): its Actions minutes are free, and the code stays private. This file is its workflow, kept
+# here: copy it to the mirror as .github/workflows/deploy.yml whenever it changes (the page starts a workflow of that
+# name). It reads the code from SOURCE_REPOSITORY with SOURCE_TOKEN (Contents and Actions read on that repository only).
+# Every value of the organization is a secret of the mirror's github-pages environment, and the sync prints none of them
+# in CI: the logs of the mirror are public.
+name: Sync and deploy
+
+on:
+  schedule:
+    # Every 15 minutes, Monday to Friday, from 6/7 am to 8/9 pm Paris time (cron runs in UTC).
+    # Off the hour marks: GitHub delays or drops scheduled runs most at the start of the hour.
+    - cron: '7,22,37,52 5-19 * * 1-5'
+  # The page starts it (DISPATCH_TOKEN), and so does every push to the main branch of the code.
+  workflow_dispatch:
+    inputs:
+      full:
+        description: Refetch the whole rolling window instead of an incremental sync
+        type: boolean
+        default: false
+      # Once FULL_SYNC_PASSWORD is set, a full sync needs it: the page signs the request with that password.
+      proof:
+        description: Proof of the full sync password, set by the page (leave empty)
+        type: string
+        default: ''
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  sync-and-deploy:
+    runs-on: ubuntu-latest
+    # The first sync after a snapshot format change reads a whole year of PRs and Actions runs; the two years before it
+    # come back a month per run.
+    timeout-minutes: 45
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url || steps.deployment-again.outputs.page_url }}
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v7
+        with:
+          repository: ${{ secrets.SOURCE_REPOSITORY }}
+          token: ${{ secrets.SOURCE_TOKEN }}
+          ref: main
+          persist-credentials: false
+
+      - name: Name the build after the commit of the code
+        run: echo "SOURCE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+
+      # The snapshot holds the raw pull requests of the organization. In this public repository it only lives encrypted
+      # with SNAPSHOT_KEY, in the Actions cache: a workflow of a pull request from a fork may restore the cache, never the
+      # key.
+      - name: Restore snapshot
+        uses: actions/cache/restore@v6
+        with:
+          path: .cache/snapshot.json.enc
+          key: snapshot-${{ github.run_id }}
+          restore-keys: snapshot-
+
+      # Without a snapshot of its own yet (the first run), the one the code's repository handed over, encrypted with the
+      # same key (its workflow uploads it): the sync goes on from where it stood rather than reading everything again.
+      - name: Decrypt the snapshot
+        env:
+          SNAPSHOT_KEY: ${{ secrets.SNAPSHOT_KEY }}
+          GH_TOKEN: ${{ secrets.SOURCE_TOKEN }}
+          SOURCE_REPOSITORY: ${{ secrets.SOURCE_REPOSITORY }}
+        run: |
+          mkdir -p .cache
+          if [ ! -f .cache/snapshot.json.enc ]; then
+            id="$(gh api "repos/${SOURCE_REPOSITORY}/actions/artifacts?name=snapshot-handover&per_page=10" \
+              --jq '[.artifacts[] | select(.expired | not)][0].id // empty' 2> /dev/null || true)"
+            if [ -n "$id" ]; then
+              gh api "repos/${SOURCE_REPOSITORY}/actions/artifacts/${id}/zip" > "$RUNNER_TEMP/handover.zip"
+              unzip -q -o "$RUNNER_TEMP/handover.zip" -d .cache
+              echo "Snapshot handed over"
+            fi
+          fi
+          if [ -f .cache/snapshot.json.enc ]; then
+            openssl enc -d -aes-256-cbc -pbkdf2 -iter 600000 -pass env:SNAPSHOT_KEY \
+              -in .cache/snapshot.json.enc -out .cache/snapshot.json
+            rm .cache/snapshot.json.enc
+          fi
+
+      # The logs show the env of each step, inputs in clear: the proof is masked first, read from the event rather than
+      # written into the command. Only the characters of a proof are kept, so that no other workflow command slips in;
+      # anything else is no valid proof anyway.
+      - name: Mask the proof of the full sync
+        if: inputs.proof
+        run: echo "::add-mask::$(jq -r '.inputs.proof' "$GITHUB_EVENT_PATH" | tr -cd '0-9a-f.')"
+
+      # Every value is a secret so that the public logs show none of them, the organization included.
+      - name: Sync pull requests
+        run: node scripts/sync.mjs
+        env:
+          ORG: ${{ secrets.ORG }}
+          GITHUB_TOKEN: ${{ secrets.ORG_STATS_TOKEN }}
+          DASHBOARD_PASSWORD: ${{ secrets.DASHBOARD_PASSWORD }}
+          REPO_CATEGORIES: ${{ secrets.REPO_CATEGORIES }}
+          BOT_USERS: ${{ secrets.BOT_USERS }}
+          REQUIRED_APPROVALS: ${{ secrets.REQUIRED_APPROVALS }}
+          SQUADS: ${{ secrets.SQUADS }}
+          DISPATCH_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
+          FULL_SYNC: ${{ inputs.full }}
+          FULL_SYNC_PASSWORD: ${{ secrets.FULL_SYNC_PASSWORD }}
+          RETRO_KEY: ${{ secrets.RETRO_KEY }}
+          MANAGER_PASSWORD: ${{ secrets.MANAGER_PASSWORD }}
+          REVIEWS_PASSWORD: ${{ secrets.REVIEWS_PASSWORD }}
+          # A variable, not a secret: true or false, nothing of the organization.
+          PERFORMANCE_PAGE: ${{ vars.PERFORMANCE_PAGE }}
+          FULL_SYNC_PROOF: ${{ inputs.proof }}
+          BUILD_ID: ${{ env.SOURCE_SHA }}
+
+      - name: Encrypt the snapshot
+        env:
+          SNAPSHOT_KEY: ${{ secrets.SNAPSHOT_KEY }}
+        run: |
+          openssl enc -aes-256-cbc -pbkdf2 -iter 600000 -salt -pass env:SNAPSHOT_KEY \
+            -in .cache/snapshot.json -out .cache/snapshot.json.enc
+          rm .cache/snapshot.json
+
+      - name: Save snapshot
+        uses: actions/cache/save@v6
+        with:
+          path: .cache/snapshot.json.enc
+          key: snapshot-${{ github.run_id }}
+
+      - name: Stamp the build
+        run: sed -i "s/__BUILD__/${SOURCE_SHA}/g" site/index.html site/retro.html site/reviews.html
+
+      - uses: actions/configure-pages@v6
+        id: pages
+
+      # A re-run keeps the artifacts of the attempts before it, and the deployment refuses to pick among several of the
+      # same name: each attempt uploads and deploys its own.
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: site
+          name: github-pages-${{ github.run_attempt }}
+
+      # GitHub Pages refuses a deployment while the one before is still finishing, as when two runs follow each other
+      # closely: then the run waits a minute and tries once more, rather than fail.
+      - name: Deploy to GitHub Pages
+        id: deployment
+        continue-on-error: true
+        uses: actions/deploy-pages@v5
+        with:
+          artifact_name: github-pages-${{ github.run_attempt }}
+
+      - name: Wait for the deployment before
+        if: steps.deployment.outcome == 'failure'
+        run: sleep 60
+
+      - name: Deploy to GitHub Pages, once more
+        id: deployment-again
+        if: steps.deployment.outcome == 'failure'
+        uses: actions/deploy-pages@v5
+        with:
+          artifact_name: github-pages-${{ github.run_attempt }}
